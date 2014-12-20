@@ -452,6 +452,32 @@ namespace Xwt.Mac
 			return GridLines.None;
 		}
 
+		public static NSDatePickerElementFlags ToMacValue (this DatePickerStyle style)
+		{
+			switch (style) {
+				case DatePickerStyle.Date:
+					return NSDatePickerElementFlags.YearMonthDateDay;
+				case DatePickerStyle.DateTime:
+					return NSDatePickerElementFlags.YearMonthDateDay | NSDatePickerElementFlags.HourMinuteSecond;
+				case DatePickerStyle.Time:
+					return NSDatePickerElementFlags.HourMinuteSecond;
+			}
+			return NSDatePickerElementFlags.YearMonthDate;
+		}
+
+		public static DatePickerStyle ToXwtValue (this NSDatePickerElementFlags flags)
+		{
+			switch (flags) {
+				case NSDatePickerElementFlags.HourMinuteSecond:
+					return DatePickerStyle.Time;
+				case NSDatePickerElementFlags.YearMonthDate:
+				case NSDatePickerElementFlags.YearMonthDateDay:
+					return DatePickerStyle.Date;
+				default:
+					return DatePickerStyle.DateTime;
+			}
+		}
+
 		public static void DrawWithColorTransform (this NSView view, Color? color, Action drawDelegate)
 		{
 			if (color.HasValue) {
