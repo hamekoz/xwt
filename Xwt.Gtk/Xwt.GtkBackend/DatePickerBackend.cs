@@ -75,143 +75,6 @@ namespace Xwt.GtkBackend
 			});
 		}
 
-		public class GtkDatePicker : Gtk.HBox
-		{
-			GtkDatePickerEntry datepickerentry = new GtkDatePickerEntry ();
-			Xwt.ToggleButton toggleButton = new ToggleButton () {
-				Image = StockIcons.Calendar.WithSize (12),
-				ImagePosition = ContentPosition.Center,
-			};
-			Xwt.Calendar calendar = new Calendar ();
-			Xwt.SpinButton hours = new SpinButton () {
-				MinimumValue = 0,
-				MaximumValue = 24,
-				IncrementValue = 1,
-				Digits = 0,
-				TooltipText = "HH",
-			};
-			Xwt.SpinButton minutes = new SpinButton () {
-				MinimumValue = 0,
-				MaximumValue = 59,
-				IncrementValue = 1,
-				Digits = 0,
-				TooltipText = "mm"
-			};
-			Xwt.SpinButton seconds = new SpinButton () {
-				MinimumValue = 0,
-				MaximumValue = 59,
-				IncrementValue = 1,
-				Digits = 0,
-				TooltipText = "ss",
-			};
-			Xwt.Popover popover = new Popover ();
-			Xwt.VBox datetimeBox = new VBox ();
-			Xwt.HBox timeBox = new HBox ();
-
-			public GtkDatePicker ()
-			{
-				toggleButton.HorizontalPlacement = WidgetPlacement.Start;
-				CurrentValue = DateTime.Now;
-//				calendar.Date = DateTime.Now.Date;
-//				hours.Value = (double)DateTime.Now.Hour;
-//				minutes.Value = (double)DateTime.Now.Minute;
-//				seconds.Value = (double)DateTime.Now.Second;
-				toggleButton.HeightRequest = (double)datepickerentry.HeightRequest;
-				toggleButton.WidthRequest = (double)datepickerentry.HeightRequest;
-//				datepickerentry.Changed += delegate(object sender, EventArgs e) {
-//					if (!toggleButton.Visible) {
-//						calendar.Date = datepickerentry.CurrentValue.Date;
-//						hours.Value = (double)datepickerentry.CurrentValue.Hour;
-//						minutes.Value = (double)datepickerentry.CurrentValue.Minute;
-//						seconds.Value = (double)datepickerentry.CurrentValue.Second;
-//						HandleValueChanged (sender, e);
-//					}
-//				};
-
-				calendar.ButtonReleased += (object sender, ButtonEventArgs e) => {
-					if (e.MultiplePress >= 2)
-						popover.Hide ();
-				};
-
-				timeBox.PackStart (hours);
-				timeBox.PackStart (minutes);
-				timeBox.PackStart (seconds);
-
-				datetimeBox.PackStart (calendar);
-				datetimeBox.PackStart (timeBox);
-
-				popover.Content = datetimeBox;
-				popover.Closed += delegate {
-					toggleButton.Active = false;
-				};
-				toggleButton.Toggled += delegate {
-					if (toggleButton.Active) {
-						calendar.Date = datepickerentry.CurrentValue.Date;
-						hours.Value = (double)datepickerentry.CurrentValue.Hour;
-						minutes.Value = (double)datepickerentry.CurrentValue.Minute;
-						seconds.Value = (double)datepickerentry.CurrentValue.Second;
-						popover.Show (Popover.Position.Top, toggleButton);
-					} else {
-						var datetime = new DateTime (
-							               calendar.Date.Year,
-							               calendar.Date.Month,
-							               calendar.Date.Day,
-							               (int)hours.Value,
-							               (int)minutes.Value,
-							               (int)seconds.Value
-						               );
-						datepickerentry.CurrentValue = datetime;
-						popover.Hide ();
-					}
-				};
-				Add (datepickerentry);
-				var nativeToggleButton = (Gtk.ToggleButton)Xwt.Toolkit.CurrentEngine.GetNativeWidget (toggleButton);
-				PackEnd (nativeToggleButton, false, false, 0);
-			}
-
-			public DateTime CurrentValue {
-				get {
-					return datepickerentry.CurrentValue;
-				}
-				set {
-					datepickerentry.CurrentValue = value;
-				}
-			}
-
-			DatePickerStyle style = DatePickerStyle.DateTime;
-
-			public DatePickerStyle Style {
-				get {
-					return style;
-				}
-				set {
-					style = value;
-					switch (style) {
-					case DatePickerStyle.Date:
-						datetimeBox.Visible = false;
-						timeBox.Visible = false;
-						break;
-					case DatePickerStyle.DateTime:
-						datetimeBox.Visible = true;
-						timeBox.Visible = true;
-						break;
-					case DatePickerStyle.Time:
-						datetimeBox.Visible = false;
-						timeBox.Visible = true;
-						break;
-					}
-				}
-			}
-
-			public EventHandler ValueChanged;
-
-			void HandleValueChanged (object sender, EventArgs e)
-			{
-				if (ValueChanged != null)
-					ValueChanged (this, e);
-			}
-		}
-
 		public class GtkDatePickerEntry : Gtk.SpinButton
 		{
 			enum Component
@@ -482,6 +345,131 @@ namespace Xwt.GtkBackend
 					oldValue = value.Ticks;
 					RaiseChangedEvent ();
 				}
+			}
+		}
+
+		public class GtkDatePicker : Gtk.HBox
+		{
+			GtkDatePickerEntry datepickerentry = new GtkDatePickerEntry ();
+			Xwt.ToggleButton toggleButton = new ToggleButton () {
+				Image = StockIcons.Calendar.WithSize (12),
+				ImagePosition = ContentPosition.Center,
+			};
+			Xwt.Calendar calendar = new Calendar ();
+			Xwt.SpinButton hours = new SpinButton () {
+				MinimumValue = 0,
+				MaximumValue = 24,
+				IncrementValue = 1,
+				Digits = 0,
+				TooltipText = "HH",
+			};
+			Xwt.SpinButton minutes = new SpinButton () {
+				MinimumValue = 0,
+				MaximumValue = 59,
+				IncrementValue = 1,
+				Digits = 0,
+				TooltipText = "mm"
+			};
+			Xwt.SpinButton seconds = new SpinButton () {
+				MinimumValue = 0,
+				MaximumValue = 59,
+				IncrementValue = 1,
+				Digits = 0,
+				TooltipText = "ss",
+			};
+			Xwt.Popover popover = new Popover ();
+			Xwt.VBox datetimeBox = new VBox ();
+			Xwt.HBox timeBox = new HBox ();
+
+
+			public DateTime CurrentValue {
+				get {
+					return datepickerentry.CurrentValue;
+				}
+				set {
+					datepickerentry.CurrentValue = value;
+				}
+			}
+
+			DatePickerStyle style = DatePickerStyle.DateTime;
+
+			public DatePickerStyle Style {
+				get {
+					return style;
+				}
+				set {
+					style = value;
+					switch (style) {
+					case DatePickerStyle.Date:
+						datetimeBox.Visible = false;
+						timeBox.Visible = false;
+						break;
+					case DatePickerStyle.DateTime:
+						datetimeBox.Visible = true;
+						timeBox.Visible = true;
+						break;
+					case DatePickerStyle.Time:
+						datetimeBox.Visible = false;
+						timeBox.Visible = true;
+						break;
+					}
+				}
+			}
+
+			public EventHandler ValueChanged;
+
+			void HandleValueChanged (object sender, EventArgs e)
+			{
+				if (ValueChanged != null)
+					ValueChanged (this, e);
+			}
+
+			public GtkDatePicker ()
+			{
+				toggleButton.HorizontalPlacement = WidgetPlacement.Start;
+				CurrentValue = DateTime.Now;
+				toggleButton.HeightRequest = (double)datepickerentry.HeightRequest;
+				toggleButton.WidthRequest = (double)datepickerentry.HeightRequest;
+
+				calendar.ButtonReleased += (object sender, ButtonEventArgs e) => {
+					if (e.MultiplePress >= 2)
+						popover.Hide ();
+				};
+
+				timeBox.PackStart (hours);
+				timeBox.PackStart (minutes);
+				timeBox.PackStart (seconds);
+
+				datetimeBox.PackStart (calendar);
+				datetimeBox.PackStart (timeBox);
+
+				popover.Content = datetimeBox;
+				popover.Closed += delegate {
+					toggleButton.Active = false;
+				};
+				toggleButton.Toggled += delegate {
+					if (toggleButton.Active) {
+						calendar.Date = datepickerentry.CurrentValue.Date;
+						hours.Value = (double)datepickerentry.CurrentValue.Hour;
+						minutes.Value = (double)datepickerentry.CurrentValue.Minute;
+						seconds.Value = (double)datepickerentry.CurrentValue.Second;
+						popover.Show (Popover.Position.Top, toggleButton);
+					} else {
+						var datetime = new DateTime (
+							               calendar.Date.Year,
+							               calendar.Date.Month,
+							               calendar.Date.Day,
+							               (int)hours.Value,
+							               (int)minutes.Value,
+							               (int)seconds.Value
+						               );
+						datepickerentry.CurrentValue = datetime;
+						popover.Hide ();
+					}
+				};
+				Add (datepickerentry);
+				var nativeToggleButton = (Gtk.ToggleButton)Xwt.Toolkit.CurrentEngine.GetNativeWidget (toggleButton);
+				PackEnd (nativeToggleButton, false, false, 0);
 			}
 		}
 	}
