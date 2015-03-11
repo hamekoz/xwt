@@ -40,7 +40,7 @@ namespace Xwt.Backends
 	{
 		void ValueChanged ();
 	}
-	
+
 	public enum DatePickerEvent
 	{
 		ValueChanged
