@@ -36,19 +36,20 @@ namespace Xwt.GtkBackend
 	{
 		public override void Initialize ()
 		{
-			Widget = new GtkDatePickerEntry ();
+			Widget = new GtkDatePicker ();
+			Widget.ValueChanged += HandleValueChanged;
 			Widget.ShowAll ();
 		}
-		
-		new GtkDatePickerEntry Widget {
-			get { return (GtkDatePickerEntry)base.Widget; }
+
+		new GtkDatePicker Widget {
+			get { return (GtkDatePicker)base.Widget; }
 			set { base.Widget = value; }
 		}
-		
+
 		protected new IDatePickerEventSink EventSink {
 			get { return (IDatePickerEventSink)base.EventSink; }
 		}
-		
+
 		public DateTime DateTime {
 			get {
 				return Widget.CurrentValue;
@@ -57,22 +58,13 @@ namespace Xwt.GtkBackend
 				Widget.CurrentValue = value;
 			}
 		}
-		
-		public override void EnableEvent (object eventId)
-		{
-			base.EnableEvent (eventId);
-			if (eventId is DatePickerEvent) {
-				if ((DatePickerEvent)eventId == DatePickerEvent.ValueChanged)
-					Widget.ValueChanged += HandleValueChanged;
+
+		public DatePickerStyle Style {
+			get {
+				return Widget.Style;
 			}
-		}
-		
-		public override void DisableEvent (object eventId)
-		{
-			base.DisableEvent (eventId);
-			if (eventId is DatePickerEvent) {
-				if ((DatePickerEvent)eventId == DatePickerEvent.ValueChanged)
-					Widget.ValueChanged -= HandleValueChanged;
+			set {
+				Widget.Style = value;
 			}
 		}
 
@@ -82,10 +74,148 @@ namespace Xwt.GtkBackend
 				EventSink.ValueChanged ();
 			});
 		}
-		
+
+		public class GtkDatePicker : Gtk.HBox
+		{
+			GtkDatePickerEntry datepickerentry = new GtkDatePickerEntry ();
+			Xwt.ToggleButton toggleButton = new ToggleButton () {
+				Image = StockIcons.Calendar.WithSize (12),
+				ImagePosition = ContentPosition.Center,
+			};
+			Xwt.Calendar calendar = new Calendar ();
+			Xwt.SpinButton hours = new SpinButton () {
+				MinimumValue = 0,
+				MaximumValue = 24,
+				IncrementValue = 1,
+				Digits = 0,
+				TooltipText = "HH",
+			};
+			Xwt.SpinButton minutes = new SpinButton () {
+				MinimumValue = 0,
+				MaximumValue = 59,
+				IncrementValue = 1,
+				Digits = 0,
+				TooltipText = "mm"
+			};
+			Xwt.SpinButton seconds = new SpinButton () {
+				MinimumValue = 0,
+				MaximumValue = 59,
+				IncrementValue = 1,
+				Digits = 0,
+				TooltipText = "ss",
+			};
+			Xwt.Popover popover = new Popover ();
+			Xwt.VBox datetimeBox = new VBox ();
+			Xwt.HBox timeBox = new HBox ();
+
+			public GtkDatePicker ()
+			{
+				toggleButton.HorizontalPlacement = WidgetPlacement.Start;
+				CurrentValue = DateTime.Now;
+//				calendar.Date = DateTime.Now.Date;
+//				hours.Value = (double)DateTime.Now.Hour;
+//				minutes.Value = (double)DateTime.Now.Minute;
+//				seconds.Value = (double)DateTime.Now.Second;
+				toggleButton.HeightRequest = (double)datepickerentry.HeightRequest;
+				toggleButton.WidthRequest = (double)datepickerentry.HeightRequest;
+//				datepickerentry.Changed += delegate(object sender, EventArgs e) {
+//					if (!toggleButton.Visible) {
+//						calendar.Date = datepickerentry.CurrentValue.Date;
+//						hours.Value = (double)datepickerentry.CurrentValue.Hour;
+//						minutes.Value = (double)datepickerentry.CurrentValue.Minute;
+//						seconds.Value = (double)datepickerentry.CurrentValue.Second;
+//						HandleValueChanged (sender, e);
+//					}
+//				};
+
+				calendar.ButtonReleased += (object sender, ButtonEventArgs e) => {
+					if (e.MultiplePress >= 2)
+						popover.Hide ();
+				};
+
+				timeBox.PackStart (hours);
+				timeBox.PackStart (minutes);
+				timeBox.PackStart (seconds);
+
+				datetimeBox.PackStart (calendar);
+				datetimeBox.PackStart (timeBox);
+
+				popover.Content = datetimeBox;
+				popover.Closed += delegate {
+					toggleButton.Active = false;
+				};
+				toggleButton.Toggled += delegate {
+					if (toggleButton.Active) {
+						calendar.Date = datepickerentry.CurrentValue.Date;
+						hours.Value = (double)datepickerentry.CurrentValue.Hour;
+						minutes.Value = (double)datepickerentry.CurrentValue.Minute;
+						seconds.Value = (double)datepickerentry.CurrentValue.Second;
+						popover.Show (Popover.Position.Top, toggleButton);
+					} else {
+						var datetime = new DateTime (
+							               calendar.Date.Year,
+							               calendar.Date.Month,
+							               calendar.Date.Day,
+							               (int)hours.Value,
+							               (int)minutes.Value,
+							               (int)seconds.Value
+						               );
+						datepickerentry.CurrentValue = datetime;
+						popover.Hide ();
+					}
+				};
+				Add (datepickerentry);
+				var nativeToggleButton = (Gtk.ToggleButton)Xwt.Toolkit.CurrentEngine.GetNativeWidget (toggleButton);
+				PackEnd (nativeToggleButton, false, false, 0);
+			}
+
+			public DateTime CurrentValue {
+				get {
+					return datepickerentry.CurrentValue;
+				}
+				set {
+					datepickerentry.CurrentValue = value;
+				}
+			}
+
+			DatePickerStyle style = DatePickerStyle.DateTime;
+
+			public DatePickerStyle Style {
+				get {
+					return style;
+				}
+				set {
+					style = value;
+					switch (style) {
+					case DatePickerStyle.Date:
+						datetimeBox.Visible = false;
+						timeBox.Visible = false;
+						break;
+					case DatePickerStyle.DateTime:
+						datetimeBox.Visible = true;
+						timeBox.Visible = true;
+						break;
+					case DatePickerStyle.Time:
+						datetimeBox.Visible = false;
+						timeBox.Visible = true;
+						break;
+					}
+				}
+			}
+
+			public EventHandler ValueChanged;
+
+			void HandleValueChanged (object sender, EventArgs e)
+			{
+				if (ValueChanged != null)
+					ValueChanged (this, e);
+			}
+		}
+
 		public class GtkDatePickerEntry : Gtk.SpinButton
 		{
-			enum Component {
+			enum Component
+			{
 				None = 0,
 				Month,
 				Day,
@@ -94,29 +224,29 @@ namespace Xwt.GtkBackend
 				Minute,
 				Second
 			}
-			
+
 			public new EventHandler ValueChanged;
-	
+
 			// We use the format of the invariant culture which is american biased apparently
 			const string DateTimeFormat = "MM/dd/yyyy HH:mm:ss";
 			Component selectedComponent;
 			double oldValue = -1;
 			int internalChangeCntd;
-	
+
 			int startPos = -1, endPos = -1;
 			int currentDigitInsert;
-	
+
 			public GtkDatePickerEntry () : base (DateTime.MinValue.Ticks,
-			                                     DateTime.MaxValue.Ticks,
-			                                     TimeSpan.TicksPerSecond)
+				                                    DateTime.MaxValue.Ticks,
+				                                    TimeSpan.TicksPerSecond)
 			{
 				Adjustment.PageIncrement = TimeSpan.TicksPerDay;
 				IsEditable = true;
 				HasFrame = false;
-				CurrentValue = DateTime.MinValue;
+				CurrentValue = DateTime.Now;
 				Adjustment.ValueChanged += HandleValueChanged;
 			}
-	
+
 			// Hack to supply the right tick value
 			void HandleValueChanged (object sender, EventArgs e)
 			{
@@ -132,28 +262,28 @@ namespace Xwt.GtkBackend
 					GoUp (ref currentValue);
 				else if (adjustedValue < currentValue)
 					GoDown (ref currentValue);
-				
+
 				internalChangeCntd++;
 				Adjustment.Value = currentValue;
 				RaiseChangedEvent ();
-	
+
 				oldValue = Adjustment.Value;
 			}
-			
+
 			protected override int OnOutput ()
 			{
 				DateTime dateTime = CurrentValue;
 				Text = dateTime.ToString (DateTimeFormat);
-				
+
 				return 1;
 			}
-			
+
 			protected override int OnInput (out double newValue)
 			{
 				newValue = Adjustment.Value;
 				return 1;
 			}
-	
+
 			void GoDown (ref double newValue)
 			{
 				switch (selectedComponent) {
@@ -177,7 +307,7 @@ namespace Xwt.GtkBackend
 					break;
 				}
 			}
-	
+
 			void GoUp (ref double newValue)
 			{
 				switch (selectedComponent) {
@@ -201,7 +331,7 @@ namespace Xwt.GtkBackend
 					break;
 				}
 			}
-			
+
 			protected override bool OnButtonPressEvent (Gdk.EventButton evnt)
 			{
 				int posX = (int)evnt.X, posY = (int)evnt.Y;
@@ -209,12 +339,12 @@ namespace Xwt.GtkBackend
 				int layoutX, layoutY;
 				GetLayoutOffsets (out layoutX, out layoutY);
 				int index, trailing;
-				
+
 				bool result = Layout.XyToIndex (Pango.Units.FromPixels (posX - layoutX),
-				                                Pango.Units.FromPixels (posY - layoutY),
-				                                out index,
-				                                out trailing);
-	
+					              Pango.Units.FromPixels (posY - layoutY),
+					              out index,
+					              out trailing);
+
 				// Hacky. Since it's entry that maintain the text GdkWindow it's normally always
 				// the last children of the widget GdkWindow because the other children are created
 				// by the spin button
@@ -228,14 +358,14 @@ namespace Xwt.GtkBackend
 					return base.OnButtonPressEvent (evnt);
 				}
 			}
-	
+
 			// Override default GTK behavior which is to select the whole entry
 			protected override void OnFocusGrabbed ()
 			{
 				base.OnFocusGrabbed ();
 				SelectRegion (startPos, endPos);
 			}
-	
+
 			void UpdateSelectedComponent (int index)
 			{
 				int componentSelected = -1;
@@ -245,15 +375,15 @@ namespace Xwt.GtkBackend
 					.ToList ();
 				stops.Insert (0, -1);
 				stops.Add (txt.Length);
-				
-				for (int i = 0; i < stops.Count - 1 && stops[i] <= index; i++) {
+
+				for (int i = 0; i < stops.Count - 1 && stops [i] <= index; i++) {
 					componentSelected = i;
-					startPos = stops[i] + 1;
-					endPos = stops[i + 1];
+					startPos = stops [i] + 1;
+					endPos = stops [i + 1];
 				}
 				selectedComponent = (Component)componentSelected + 1;
 			}
-			
+
 			protected override void OnChanged ()
 			{
 				base.OnChanged ();
@@ -262,7 +392,7 @@ namespace Xwt.GtkBackend
 				else
 					SelectRegion (startPos, endPos);
 			}
-	
+
 			protected override bool OnKeyReleaseEvent (Gdk.EventKey evnt)
 			{
 				char pressedKey = (char)Gdk.Keyval.ToUnicode (evnt.KeyValue);
@@ -300,7 +430,7 @@ namespace Xwt.GtkBackend
 				}
 				return base.OnKeyReleaseEvent (evnt);
 			}
-	
+
 			protected override bool OnKeyPressEvent (Gdk.EventKey evnt)
 			{
 				// We only allow the keypress to proceed to the normal handler
@@ -312,12 +442,12 @@ namespace Xwt.GtkBackend
 				else
 					return true;
 			}
-	
+
 			int ValueFromDigitInsert (int baseValue, int newValue)
 			{
 				return currentDigitInsert == 0 ? newValue : newValue + baseValue * 10;
 			}
-	
+
 			DateTime FromCopy (DateTime source,
 			                   int year = -1,
 			                   int month = -1,
@@ -327,20 +457,20 @@ namespace Xwt.GtkBackend
 			                   int second = -1)
 			{
 				return new DateTime (year == -1 ? source.Year : year,
-				                     month == -1 ? source.Month : month,
-				                     day == -1 ? source.Day : day,
-				                     hour == -1 ? source.Hour : hour,
-				                     minute == -1 ? source.Minute : minute,
-				                     second == -1 ? source.Second : second);
+					month == -1 ? source.Month : month,
+					day == -1 ? source.Day : day,
+					hour == -1 ? source.Hour : hour,
+					minute == -1 ? source.Minute : minute,
+					second == -1 ? source.Second : second);
 			}
-			
+
 			void RaiseChangedEvent ()
 			{
-				var tmp = ValueChanged;
-				if (tmp != null)
-					tmp (this, EventArgs.Empty);
+				//var tmp = ValueChanged;
+				if (ValueChanged != null)
+					ValueChanged (this, EventArgs.Empty);
 			}
-			
+
 			public DateTime CurrentValue {
 				get {
 					return new DateTime ((long)Adjustment.Value);

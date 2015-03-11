@@ -41,6 +41,7 @@ namespace Xwt.Backends
 		public const string Zoom100 = "Zoom100";
 		public const string Add = "Add";
 		public const string Remove = "Remove";
+		public const string Calendar = "Calendar";
 	}
 }
 
