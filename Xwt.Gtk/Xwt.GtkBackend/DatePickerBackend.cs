@@ -130,7 +130,7 @@ namespace Xwt.GtkBackend
 			Dictionary<DateTimeComponent, int> componentLength = new Dictionary<DateTimeComponent, int> ();
 			List<DateTimeComponent> componentsSorted = new List<DateTimeComponent> ();
 			
-			public new EventHandler ValueChanged;
+			public EventHandler ValueChanged;
 
 			DateTimeComponent selectedComponent = DateTimeComponent.None;
 
@@ -595,6 +595,7 @@ namespace Xwt.GtkBackend
 
 			public GtkDatePicker ()
 			{
+				datepickerentry.ValueChanged += HandleValueChanged;
 				toggleButton.HorizontalPlacement = WidgetPlacement.Start;
 				DateTime = DateTime.Now;
 				toggleButton.HeightRequest = (double)datepickerentry.HeightRequest;
