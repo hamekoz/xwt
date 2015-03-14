@@ -24,13 +24,13 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
 using System;
 using Xwt.Backends;
 
 #if MONOMAC
 using MonoMac.Foundation;
 using MonoMac.AppKit;
+
 
 #else
 using Foundation;
@@ -70,39 +70,53 @@ namespace Xwt.Mac
 			ApplicationContext.InvokeUserCode (((ICalendarEventSink)EventSink).OnValueChanged);
 		}
 
+		// NSDate timezone workaround: cache and restore the DateTimeKind of the
+		// users DateTime object, since all conversions between DateTime and NSDate
+		// are in UTC (see https://github.com/mono/maccore/blob/master/src/Foundation/NSDate.cs).
+		bool userTimeIsUTC;
+
 		public DateTime Date {
 			get {
-				return (DateTime)Widget.DateValue;
+				if (userTimeIsUTC)
+					return ((DateTime)Widget.DateValue).ToUniversalTime ();
+				else
+					return ((DateTime)Widget.DateValue).ToLocalTime ();
 			}
 			set {
-				var currentDate = (NSDate)value;
-				Widget.DateValue = currentDate;
+
+				if (value.Kind == DateTimeKind.Local) {
+					userTimeIsUTC = false;
+					Widget.TimeZone = NSTimeZone.LocalTimeZone;
+				} else {
+					userTimeIsUTC = true;
+					Widget.TimeZone = NSTimeZone.FromName ("UTC");
+				}
+
+				Widget.DateValue = (NSDate)value.ToUniversalTime ();
 			}
 		}
 
-		DateTime minDate;
-
-		public DateTime MinDate {
+		public DateTime MinimumDate {
 			get {
-				return minDate;
+				if (userTimeIsUTC)
+					return ((DateTime)Widget.MinDate).ToUniversalTime ();
+				else
+					return ((DateTime)Widget.MinDate).ToLocalTime ();
 			}
 			set {
-				minDate = value;
-				var date = (NSDate)minDate;
-				Widget.MinDate = date;
+				Widget.MinDate = (NSDate)value.ToUniversalTime ();
 			}
 		}
 
-		DateTime maxDate;
-
-		public DateTime MaxDate {
+		public DateTime MaximumDate {
 			get {
-				return maxDate;
+				if (userTimeIsUTC)
+					return ((DateTime)Widget.MaxDate).ToUniversalTime ();
+				else
+					return ((DateTime)Widget.MaxDate).ToLocalTime ();
 			}
 			set {
-				maxDate = value;
-				var date = (NSDate)maxDate;
-				Widget.MaxDate = date;
+				Widget.MaxDate = (NSDate)value.ToUniversalTime ();
 			}
 		}
 
@@ -116,7 +130,6 @@ namespace Xwt.Mac
 
 	class MacCalendar: NSDatePicker, IViewObject
 	{
-
 		public ViewBackend Backend { get; set; }
 
 		public NSView View { get { return this; } }
