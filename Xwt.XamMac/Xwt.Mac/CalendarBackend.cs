@@ -32,6 +32,8 @@ using MonoMac.Foundation;
 using MonoMac.AppKit;
 
 
+
+
 #else
 using Foundation;
 using AppKit;
@@ -91,8 +93,8 @@ namespace Xwt.Mac
 					userTimeIsUTC = true;
 					Widget.TimeZone = NSTimeZone.FromName ("UTC");
 				}
-
-				Widget.DateValue = (NSDate)value.ToUniversalTime ();
+				var date = (NSDate)value.ToUniversalTime ();
+				Widget.DateValue = date;
 			}
 		}
 
@@ -104,7 +106,8 @@ namespace Xwt.Mac
 					return ((DateTime)Widget.MinDate).ToLocalTime ();
 			}
 			set {
-				Widget.MinDate = (NSDate)value.ToUniversalTime ();
+				var minDate = (NSDate)value.ToUniversalTime ();
+				Widget.MinDate = minDate;
 			}
 		}
 
@@ -116,7 +119,8 @@ namespace Xwt.Mac
 					return ((DateTime)Widget.MaxDate).ToLocalTime ();
 			}
 			set {
-				Widget.MaxDate = (NSDate)value.ToUniversalTime ();
+				var maxDate = (NSDate)value.ToUniversalTime ();
+				Widget.MaxDate = maxDate;
 			}
 		}
 
@@ -141,6 +145,8 @@ namespace Xwt.Mac
 			Bordered = true;
 			DatePickerElements = NSDatePickerElementFlags.YearMonthDateDay;
 			DrawsBackground = true;
+			MinDate = DateTime.MinValue;
+			MaxDate = DateTime.MaxValue;
 		}
 	}
 }
