@@ -327,6 +327,8 @@
     <Compile Include="Xwt\XwtSynchronizationContext.cs" />
     <Compile Include="Xwt\Calendar.cs" />
     <Compile Include="Xwt.Backends\ICalendarBackend.cs" />
+    <Compile Include="Xwt.Backends\ITextAreaBackend.cs" />
+    <Compile Include="Xwt\TextArea.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />

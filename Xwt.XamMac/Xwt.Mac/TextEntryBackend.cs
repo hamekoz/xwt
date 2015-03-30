@@ -39,7 +39,7 @@ using AppKit;
 
 namespace Xwt.Mac
 {
-	public class TextEntryBackend: ViewBackend<NSView,ITextEntryEventSink>, ITextEntryBackend
+	public class TextEntryBackend: ViewBackend<NSView,ITextBoxEventSink>, ITextEntryBackend, ITextAreaBackend
 	{
 		int cacheSelectionStart, cacheSelectionLength;
 		bool checkMouseSelection;
@@ -61,7 +61,11 @@ namespace Xwt.Mac
 			} else {
 				var view = new CustomTextField (EventSink, ApplicationContext);
 				ViewObject = new CustomAlignedContainer (EventSink, ApplicationContext, (NSView)view);
-				MultiLine = false;
+				if (Frontend is Xwt.TextArea)
+					MultiLine = true;
+				else
+					MultiLine = false;
+				Wrap = WrapMode.None;
 			}
 
 			Frontend.MouseEntered += delegate {
@@ -154,13 +158,42 @@ namespace Xwt.Mac
 				if (value) {
 					Widget.Cell.UsesSingleLineMode = false;
 					Widget.Cell.Scrollable = false;
-					Widget.Cell.Wraps = true;
 				} else {
 					Widget.Cell.UsesSingleLineMode = true;
 					Widget.Cell.Scrollable = true;
-					Widget.Cell.Wraps = false;
 				}
 				Container.ExpandVertically = value;
+			}
+		}
+
+		public WrapMode Wrap {
+			get {
+				if (!Widget.Cell.Wraps)
+					return WrapMode.None;
+				switch (Widget.Cell.LineBreakMode) {
+				case NSLineBreakMode.ByWordWrapping:
+					return WrapMode.Word;
+				case NSLineBreakMode.CharWrapping:
+					return WrapMode.Character;
+				default:
+					return WrapMode.None;
+				}
+			}
+			set {
+				if (value == WrapMode.None) {
+					Widget.Cell.Wraps = false;
+				} else {
+					Widget.Cell.Wraps = true;
+					switch (value) {
+					case WrapMode.Word:
+					case WrapMode.WordAndCharacter:
+						Widget.Cell.LineBreakMode = NSLineBreakMode.ByWordWrapping;
+						break;
+					case WrapMode.Character:
+						Widget.Cell.LineBreakMode = NSLineBreakMode.CharWrapping;
+						break;
+					}
+				}
 			}
 		}
 
@@ -246,10 +279,10 @@ namespace Xwt.Mac
 	
 	class CustomTextField: NSTextField, IViewObject
 	{
-		ITextEntryEventSink eventSink;
+		ITextBoxEventSink eventSink;
 		ApplicationContext context;
 		
-		public CustomTextField (ITextEntryEventSink eventSink, ApplicationContext context)
+		public CustomTextField (ITextBoxEventSink eventSink, ApplicationContext context)
 		{
 			this.context = context;
 			this.eventSink = eventSink;
