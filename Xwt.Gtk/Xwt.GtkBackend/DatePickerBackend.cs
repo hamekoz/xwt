@@ -506,6 +506,8 @@ namespace Xwt.GtkBackend
 			Xwt.ToggleButton toggleButton = new ToggleButton () {
 				Image = StockIcons.Calendar.WithSize (12),
 				ImagePosition = ContentPosition.Center,
+				ExpandVertical = false,
+				ExpandHorizontal = false,
 			};
 			Xwt.Calendar calendar = new Calendar ();
 			Xwt.SpinButton hours = new SpinButton () {
