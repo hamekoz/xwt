@@ -61,13 +61,11 @@ namespace Xwt.Mac
 			} else {
 				var view = new CustomTextField (EventSink, ApplicationContext);
 				ViewObject = new CustomAlignedContainer (EventSink, ApplicationContext, (NSView)view);
-				if (Frontend is Xwt.TextArea)
-					MultiLine = true;
-				else
-					MultiLine = false;
+				MultiLine = Frontend is Xwt.TextArea;
 				Wrap = WrapMode.None;
 			}
 
+			canGetFocus = Widget.AcceptsFirstResponder ();
 			Frontend.MouseEntered += delegate {
 				checkMouseSelection = true;
 			};
@@ -158,9 +156,11 @@ namespace Xwt.Mac
 				if (value) {
 					Widget.Cell.UsesSingleLineMode = false;
 					Widget.Cell.Scrollable = false;
+					Widget.Cell.Wraps = true;
 				} else {
 					Widget.Cell.UsesSingleLineMode = true;
 					Widget.Cell.Scrollable = true;
+					Widget.Cell.Wraps = false;
 				}
 				Container.ExpandVertically = value;
 			}
@@ -270,9 +270,32 @@ namespace Xwt.Mac
 			}
 		}
 
+		#endregion
+	
+
+		#region Gross Hack
+		// The 'Widget' property is not virtual and the one on the base class holds
+		// the 'CustomAlignedContainer' object and *not* the NSTextField object. As
+		// such everything that uses the 'Widget' property in the base class might be
+		// working on the wrong object. The focus methods definitely need to work on
+		// the NSTextField directly, so i've overridden those and made them interact
+		// with the NSTextField instead of the CustomAlignedContainer.
+		bool canGetFocus = true;
+		public override bool CanGetFocus {
+			get { return canGetFocus; }
+			set { canGetFocus = value && Widget.AcceptsFirstResponder (); }
+		}
+
 		public override void SetFocus ()
 		{
-			Widget.BecomeFirstResponder ();
+			if (Widget.Window != null && CanGetFocus)
+				Widget.Window.MakeFirstResponder (Widget);
+		}
+
+		public override bool HasFocus {
+			get {
+				return Widget.Window != null && Widget.Window.FirstResponder == Widget;
+			}
 		}
 		#endregion
 	}
@@ -281,13 +304,23 @@ namespace Xwt.Mac
 	{
 		ITextBoxEventSink eventSink;
 		ApplicationContext context;
-		
+		CustomCell cell;
+
 		public CustomTextField (ITextBoxEventSink eventSink, ApplicationContext context)
 		{
 			this.context = context;
 			this.eventSink = eventSink;
+			this.Cell = cell = new CustomCell {
+				BezelStyle = NSTextFieldBezelStyle.Square,
+				Bezeled = true,
+				DrawsBackground = true,
+				BackgroundColor = NSColor.White,
+				Editable = true,
+				EventSink = eventSink,
+				Context = context,
+			};
 		}
-		
+
 		public NSView View {
 			get {
 				return this;
@@ -305,17 +338,95 @@ namespace Xwt.Mac
 			});
 		}
 
-		int cachedCursorPosition;
-		public override void KeyUp (NSEvent theEvent)
+		class CustomCell : NSTextFieldCell
 		{
-			if (CurrentEditor!= null && cachedCursorPosition != CurrentEditor.SelectedRange.Location) {
-				cachedCursorPosition = (int)CurrentEditor.SelectedRange.Location;
-				context.InvokeUserCode (delegate {
-					eventSink.OnSelectionChanged ();
-				});
+			CustomEditor editor;
+			public ApplicationContext Context {
+				get; set;
 			}
-			base.KeyUp (theEvent);
+
+			public ITextEntryEventSink EventSink {
+				get; set;
+			}
+
+			public CustomCell ()
+			{
+
+			}
+
+			public override NSTextView FieldEditorForView (NSView aControlView)
+			{
+				if (editor == null) {
+					editor = new CustomEditor {
+						Context = this.Context,
+						EventSink = this.EventSink,
+						FieldEditor = true,
+						Editable = true,
+						DrawsBackground = true,
+						BackgroundColor = NSColor.White,
+					};
+				}
+				return editor;
+			}
+		}
+
+		class CustomEditor : NSTextView
+		{
+			public ApplicationContext Context {
+				get; set;
+			}
+
+			public ITextEntryEventSink EventSink {
+				get; set;
+			}
+
+			public CustomEditor ()
+			{
+
+			}
+
+			public override void KeyDown (NSEvent theEvent)
+			{
+				Context.InvokeUserCode (delegate {
+					EventSink.OnKeyPressed (theEvent.ToXwtKeyEventArgs ());
+				});
+				base.KeyDown (theEvent);
+			}
+
+			nint cachedCursorPosition;
+			public override void KeyUp (NSEvent theEvent)
+			{
+				if (cachedCursorPosition != SelectedRange.Location) {
+					cachedCursorPosition = SelectedRange.Location;
+					Context.InvokeUserCode (delegate {
+						EventSink.OnSelectionChanged ();
+						EventSink.OnKeyReleased (theEvent.ToXwtKeyEventArgs ());
+					});
+				}
+				base.KeyUp (theEvent);
+			}
+
+			public override bool BecomeFirstResponder ()
+			{
+				var result = base.BecomeFirstResponder ();
+				if (result) {
+					Context.InvokeUserCode (() => {
+						EventSink.OnGotFocus ();
+					});
+				}
+				return result;
+			}
+
+			public override bool ResignFirstResponder ()
+			{
+				var result = base.ResignFirstResponder ();
+				if (result) {
+					Context.InvokeUserCode (() => {
+						EventSink.OnLostFocus ();
+					});
+				}
+				return result;
+			}
 		}
 	}
 }
-
