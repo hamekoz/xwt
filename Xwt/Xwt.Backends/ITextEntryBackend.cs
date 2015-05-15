@@ -48,6 +48,7 @@ namespace Xwt.Backends
 		int SelectionStart { get; set; }
 		int SelectionLength { get; set; }
 		string SelectedText { get; set; }
+		void SetCompletions (string[] completions);
 	}
 	
 	public interface ITextBoxEventSink: IWidgetEventSink

@@ -161,6 +161,11 @@ namespace Xwt
 			set { Backend.SelectedText = value; }
 		}
 
+		public void SetCompletions (string[] completions)
+		{
+			Backend.SetCompletions (completions);
+		}
+
 		protected virtual void OnChanged (EventArgs e)
 		{
 			if (changed != null)
