@@ -33,6 +33,11 @@ namespace Xwt.GtkBackend
 {
 	public partial class TextAreaBackend : WidgetBackend, ITextAreaBackend
 	{
+		public void SetCompletions (string[] completions)
+		{
+			throw new NotImplementedException ();
+		}
+
 		public override void Initialize ()
 		{
 			textView = new Gtk.TextView ();
@@ -45,10 +50,11 @@ namespace Xwt.GtkBackend
 		}
 
 		Gtk.TextView textView;
+
 		protected virtual Gtk.TextView TextView {
 			get { return textView; }
 		}
-		
+
 		protected new ITextBoxEventSink EventSink {
 			get { return (ITextBoxEventSink)base.EventSink; }
 		}
@@ -62,7 +68,7 @@ namespace Xwt.GtkBackend
 			get { return TextView.Justification.ToXwtValue (); }
 			set { TextView.Justification = value.ToGtkJustification (); }
 		}
-		
+
 		public override Color BackgroundColor {
 			get {
 				return base.BackgroundColor;
@@ -74,6 +80,7 @@ namespace Xwt.GtkBackend
 		}
 
 		Pango.Layout layout;
+
 		public override object Font {
 			get { return base.Font; }
 			set {
@@ -96,30 +103,30 @@ namespace Xwt.GtkBackend
 		public WrapMode Wrap {
 			get {
 				switch (TextView.WrapMode) {
-					case Gtk.WrapMode.Char:
-						return WrapMode.Character;
-					case Gtk.WrapMode.Word:
-						return WrapMode.Word;
-					case Gtk.WrapMode.WordChar:
-						return WrapMode.WordAndCharacter;
-					default:
-						return WrapMode.None;
+				case Gtk.WrapMode.Char:
+					return WrapMode.Character;
+				case Gtk.WrapMode.Word:
+					return WrapMode.Word;
+				case Gtk.WrapMode.WordChar:
+					return WrapMode.WordAndCharacter;
+				default:
+					return WrapMode.None;
 				}
 			}
 			set {
 				switch (value) {
-					case WrapMode.Character:
-						TextView.WrapMode = Gtk.WrapMode.Char;
-						break;
-					case WrapMode.Word:
-						TextView.WrapMode = Gtk.WrapMode.Word;
-						break;
-					case WrapMode.WordAndCharacter:
-						TextView.WrapMode = Gtk.WrapMode.WordChar;
-						break;
-					default:
-						TextView.WrapMode = Gtk.WrapMode.None;
-						break;
+				case WrapMode.Character:
+					TextView.WrapMode = Gtk.WrapMode.Char;
+					break;
+				case WrapMode.Word:
+					TextView.WrapMode = Gtk.WrapMode.Word;
+					break;
+				case WrapMode.WordAndCharacter:
+					TextView.WrapMode = Gtk.WrapMode.WordChar;
+					break;
+				default:
+					TextView.WrapMode = Gtk.WrapMode.None;
+					break;
 				}
 			}
 		}
@@ -219,8 +226,12 @@ namespace Xwt.GtkBackend
 			base.EnableEvent (eventId);
 			if (eventId is TextBoxEvent) {
 				switch ((TextBoxEvent)eventId) {
-				case TextBoxEvent.Changed: TextView.Buffer.Changed += HandleChanged; break;
-				case TextBoxEvent.Activated: TextView.KeyPressEvent += HandleKeyPress; break;
+				case TextBoxEvent.Changed:
+					TextView.Buffer.Changed += HandleChanged;
+					break;
+				case TextBoxEvent.Activated:
+					TextView.KeyPressEvent += HandleKeyPress;
+					break;
 				case TextBoxEvent.SelectionChanged:
 					enableSelectionChangedEvent = true;
 					TextView.MoveCursor += HandleMoveCursor;
@@ -231,14 +242,18 @@ namespace Xwt.GtkBackend
 				}
 			}
 		}
-		
+
 		public override void DisableEvent (object eventId)
 		{
 			base.DisableEvent (eventId);
 			if (eventId is TextBoxEvent) {
 				switch ((TextBoxEvent)eventId) {
-				case TextBoxEvent.Changed: TextView.Buffer.Changed -= HandleChanged; break;
-				case TextBoxEvent.Activated: TextView.KeyPressEvent -= HandleKeyPress; break;
+				case TextBoxEvent.Changed:
+					TextView.Buffer.Changed -= HandleChanged;
+					break;
+				case TextBoxEvent.Activated:
+					TextView.KeyPressEvent -= HandleKeyPress;
+					break;
 				case TextBoxEvent.SelectionChanged:
 					enableSelectionChangedEvent = false;
 					TextView.MoveCursor -= HandleMoveCursor;
@@ -270,6 +285,7 @@ namespace Xwt.GtkBackend
 		}
 
 		bool enableSelectionChangedEvent;
+
 		void HandleSelectionChanged ()
 		{
 			if (enableSelectionChangedEvent)
