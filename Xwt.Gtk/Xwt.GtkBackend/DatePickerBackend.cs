@@ -502,38 +502,39 @@ namespace Xwt.GtkBackend
 
 		public class GtkDatePicker : Gtk.HBox
 		{
-			GtkDatePickerEntry datepickerentry = new GtkDatePickerEntry ();
-			Xwt.ToggleButton toggleButton = new ToggleButton () {
+			readonly GtkDatePickerEntry datepickerentry = new GtkDatePickerEntry ();
+			readonly ToggleButton toggleButton = new ToggleButton {
 				Image = StockIcons.Calendar.WithSize (12),
 				ImagePosition = ContentPosition.Center,
 				ExpandVertical = false,
 				ExpandHorizontal = false,
 			};
-			Xwt.Calendar calendar = new Calendar ();
-			Xwt.SpinButton hours = new SpinButton () {
+			readonly Button NowButton = new Button ();
+			readonly Calendar calendar = new Calendar ();
+			readonly SpinButton hours = new SpinButton {
 				MinimumValue = 0,
 				MaximumValue = 24,
 				IncrementValue = 1,
 				Digits = 0,
 				TooltipText = "HH",
 			};
-			Xwt.SpinButton minutes = new SpinButton () {
+			readonly SpinButton minutes = new SpinButton {
 				MinimumValue = 0,
 				MaximumValue = 59,
 				IncrementValue = 1,
 				Digits = 0,
 				TooltipText = "mm"
 			};
-			Xwt.SpinButton seconds = new SpinButton () {
+			readonly SpinButton seconds = new SpinButton {
 				MinimumValue = 0,
 				MaximumValue = 59,
 				IncrementValue = 1,
 				Digits = 0,
 				TooltipText = "ss",
 			};
-			Xwt.Popover popover = new Popover ();
-			Xwt.VBox datetimeBox = new VBox ();
-			Xwt.HBox timeBox = new HBox () { HorizontalPlacement = WidgetPlacement.Center };
+			readonly Popover popover = new Popover ();
+			VBox datetimeBox = new VBox ();
+			HBox timeBox = new HBox { HorizontalPlacement = WidgetPlacement.Center };
 
 
 			public DateTime DateTime {
@@ -573,15 +574,18 @@ namespace Xwt.GtkBackend
 					case DatePickerStyle.Date:
 						datetimeBox.Clear ();
 						datetimeBox.PackStart (calendar);
+						NowButton.Label = "Today";
 						break;
 					case DatePickerStyle.DateTime:
 						datetimeBox.Clear ();
 						datetimeBox.PackStart (calendar);
 						datetimeBox.PackStart (timeBox);
+						NowButton.Label = "Today Now";
 						break;
 					case DatePickerStyle.Time:
 						datetimeBox.Clear ();
 						datetimeBox.PackStart (timeBox);
+						NowButton.Label = "Now";
 						break;
 					}
 				}
@@ -602,7 +606,7 @@ namespace Xwt.GtkBackend
 				toggleButton.HeightRequest = (double)datepickerentry.HeightRequest;
 				toggleButton.WidthRequest = (double)datepickerentry.HeightRequest;
 
-				calendar.ButtonPressed += (object sender, ButtonEventArgs e) => {
+				calendar.ButtonPressed += (sender, e) => {
 					if (e.MultiplePress >= 2)
 						popover.Hide ();
 				};
@@ -638,8 +642,9 @@ namespace Xwt.GtkBackend
 						popover.Hide ();
 					}
 				};
+				NowButton.Clicked += (sender, e) => DateTime = DateTime.Now;
 				Add (datepickerentry);
-				var nativeToggleButton = (Gtk.ToggleButton)Xwt.Toolkit.CurrentEngine.GetNativeWidget (toggleButton);
+				var nativeToggleButton = (Gtk.ToggleButton)Toolkit.CurrentEngine.GetNativeWidget (toggleButton);
 				PackEnd (nativeToggleButton, false, false, 0);
 			}
 		}
