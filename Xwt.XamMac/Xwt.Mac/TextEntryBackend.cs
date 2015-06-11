@@ -274,6 +274,10 @@ namespace Xwt.Mac
 		{
 		}
 
+		public void SetCompletionMatchFunc (Func<string, string, bool> matchFunc)
+		{
+		}
+
 		#endregion
 	
 

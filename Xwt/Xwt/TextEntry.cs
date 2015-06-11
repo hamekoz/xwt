@@ -166,6 +166,11 @@ namespace Xwt
 			Backend.SetCompletions (completions);
 		}
 
+		public void SetCompletionMatchFunction (Func<string, string, bool> matchFunc)
+		{
+			Backend.SetCompletionMatchFunc (matchFunc);
+		}
+
 		protected virtual void OnChanged (EventArgs e)
 		{
 			if (changed != null)
