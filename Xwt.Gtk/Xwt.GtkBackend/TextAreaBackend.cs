@@ -33,6 +33,11 @@ namespace Xwt.GtkBackend
 {
 	public partial class TextAreaBackend : WidgetBackend, ITextAreaBackend
 	{
+		public void SetCompletionMatchFunc (Func<string, string, bool> matchFunc)
+		{
+			throw new NotImplementedException ();
+		}
+
 		public void SetCompletions (string[] completions)
 		{
 			throw new NotImplementedException ();
