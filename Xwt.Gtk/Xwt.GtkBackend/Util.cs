@@ -194,7 +194,7 @@ namespace Xwt.GtkBackend
 				icons [StockIconId.Error] = Gtk.Stock.DialogError;
 				icons [StockIconId.Information] = Gtk.Stock.DialogInfo;
 				icons [StockIconId.Question] = Gtk.Stock.DialogQuestion;
-				icons [StockIconId.Calendar] = "stock_calendar";
+				icons [StockIconId.Calendar] = Gtk.Stock.GotoBottom;
 			}
 			string res;
 			if (!icons.TryGetValue (id, out res))

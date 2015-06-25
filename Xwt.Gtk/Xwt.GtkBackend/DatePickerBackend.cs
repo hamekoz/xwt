@@ -39,7 +39,6 @@ namespace Xwt.GtkBackend
 		public override void Initialize ()
 		{
 			Widget = new GtkDatePicker ();
-			//Widget.ValueChanged += HandleValueChanged;
 			Widget.ShowAll ();
 		}
 
