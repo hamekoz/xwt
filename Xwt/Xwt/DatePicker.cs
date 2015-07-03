@@ -34,7 +34,7 @@ namespace Xwt
 		Date,
 		DateTime
 	}
-
+	
 	[BackendType (typeof(IDatePickerBackend))]
 	public class DatePicker : Widget
 	{
@@ -59,7 +59,7 @@ namespace Xwt
 
 		static DatePicker ()
 		{
-			MapEvent (DatePickerEvent.ValueChanged, typeof(DatePicker), "OnValueChanged");
+			MapEvent (DatePickerEvent.ValueChanged, typeof (Label), "OnValueChanged");
 		}
 
 		protected new class WidgetBackendHost: Widget.WidgetBackendHost, IDatePickerEventSink
@@ -69,16 +69,16 @@ namespace Xwt
 				((DatePicker)Parent).OnValueChanged (EventArgs.Empty);
 			}
 		}
-
+		
 		IDatePickerBackend Backend {
 			get { return (IDatePickerBackend) BackendHost.Backend; }
 		}
-
+		
 		protected override BackendHost CreateBackendHost ()
 		{
 			return new WidgetBackendHost ();
 		}
-
+		
 		public DateTime DateTime {
 			get {
 				return Backend.DateTime;
@@ -88,21 +88,21 @@ namespace Xwt
 			}
 		}
 
-		public DateTime MinDateTime {
+		public DateTime MinimumDateTime {
 			get {
-				return Backend.MinDateTime;
+				return Backend.MinimumDateTime;
 			}
 			set {
-				Backend.MinDateTime = value;
+				Backend.MinimumDateTime = value;
 			}
 		}
 
-		public DateTime MaxDateTime {
+		public DateTime MaximumDateTime {
 			get {
-				return Backend.MaxDateTime;
+				return Backend.MaximumDateTime;
 			}
 			set {
-				Backend.MaxDateTime = value;
+				Backend.MaximumDateTime = value;
 			}
 		}
 		
@@ -114,7 +114,7 @@ namespace Xwt
 				Backend.Style = value;
 			}
 		}
-
+		
 		protected virtual void OnValueChanged (EventArgs e)
 		{
 			if (valueChanged != null)
@@ -122,7 +122,7 @@ namespace Xwt
 		}
 
 		EventHandler valueChanged;
-
+		
 		public event EventHandler ValueChanged {
 			add {
 				BackendHost.OnBeforeEventAdd (DatePickerEvent.ValueChanged, valueChanged);

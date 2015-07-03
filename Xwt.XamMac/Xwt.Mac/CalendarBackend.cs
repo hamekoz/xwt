@@ -3,7 +3,7 @@
 //
 // Author:
 //       Ezequiel Taranto <ezequiel89@gmail.com>
-//		 Claudio Rodrigo Pereyra Diaz <claudiorodrigo@pereyeradiaz.com.ar>
+//	 Claudio Rodrigo Pereyra Diaz <claudiorodrigo@pereyeradiaz.com.ar>
 //
 // Copyright (c) 2015 Hamekoz
 //
@@ -24,15 +24,14 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
 using System;
 using Xwt.Backends;
 
 #if MONOMAC
-using nint = System.Int32;
-using nfloat = System.Single;
 using MonoMac.Foundation;
 using MonoMac.AppKit;
+
+
 
 
 #else
@@ -73,39 +72,48 @@ namespace Xwt.Mac
 			ApplicationContext.InvokeUserCode (((ICalendarEventSink)EventSink).OnValueChanged);
 		}
 
+		// NSDate timezone workaround: cache and restore the DateTimeKind of the
+		// users DateTime objects, since all conversions between DateTime and NSDate
+		// are in UTC (see https://github.com/mono/maccore/blob/master/src/Foundation/NSDate.cs).
+		DateTimeKind userDateKind = DateTimeKind.Unspecified;
+		DateTimeKind userMinDateKind = DateTimeKind.Unspecified;
+		DateTimeKind userMaxDateKind = DateTimeKind.Unspecified;
+
 		public DateTime Date {
 			get {
-				return (DateTime)Widget.DateValue;
+				if (userDateKind == DateTimeKind.Utc)
+					return ((DateTime)Widget.DateValue).ToUniversalTime ();
+				// handle DateTimeKind.Unspecified and DateTimeKind.Local the same way
+				// like its done by System.TimeZone.ToUniversalTime when setting the Date.
+				return new DateTime(((DateTime)Widget.DateValue).ToLocalTime ().Ticks, userDateKind);
 			}
 			set {
-				var currentDate = (NSDate)value;
-				Widget.DateValue = currentDate;
+				userDateKind = value.Kind;
+				Widget.DateValue = (NSDate)value.ToUniversalTime ();
 			}
 		}
 
-		DateTime minDate;
-
-		public DateTime MinDate {
+		public DateTime MinimumDate {
 			get {
-				return minDate;
+				if (userMinDateKind == DateTimeKind.Utc)
+					return ((DateTime)Widget.MinDate).ToUniversalTime ();
+				return new DateTime(((DateTime)Widget.MinDate).ToLocalTime ().Ticks, userMinDateKind);
 			}
 			set {
-				minDate = value;
-				var date = (NSDate)minDate;
-				Widget.MinDate = date;
+				userMinDateKind = value.Kind;
+				Widget.MinDate = (NSDate)value.ToUniversalTime ();
 			}
 		}
 
-		DateTime maxDate;
-
-		public DateTime MaxDate {
+		public DateTime MaximumDate {
 			get {
-				return maxDate;
+				if (userMaxDateKind == DateTimeKind.Utc)
+					return ((DateTime)Widget.MaxDate).ToUniversalTime ();
+				return new DateTime(((DateTime)Widget.MaxDate).ToLocalTime ().Ticks, userMaxDateKind);
 			}
 			set {
-				maxDate = value;
-				var date = (NSDate)maxDate;
-				Widget.MaxDate = date;
+				userMaxDateKind = value.Kind;
+				Widget.MaxDate = (NSDate)value.ToUniversalTime ();
 			}
 		}
 
@@ -119,7 +127,6 @@ namespace Xwt.Mac
 
 	class MacCalendar: NSDatePicker, IViewObject
 	{
-
 		public ViewBackend Backend { get; set; }
 
 		public NSView View { get { return this; } }
@@ -131,6 +138,8 @@ namespace Xwt.Mac
 			Bordered = true;
 			DatePickerElements = NSDatePickerElementFlags.YearMonthDateDay;
 			DrawsBackground = true;
+			MinDate = (NSDate)DateTime.MinValue.ToUniversalTime ();
+			MaxDate = (NSDate)DateTime.MaxValue.ToUniversalTime ();
 		}
 	}
 }
