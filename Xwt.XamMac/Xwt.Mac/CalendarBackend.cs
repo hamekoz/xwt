@@ -1,10 +1,11 @@
-//
-// DatePickerBackend.cs
+﻿//
+// CalendarBackend.cs
 //
 // Author:
-//       Lluis Sanchez <lluis@xamarin.com>
+//       Ezequiel Taranto <ezequiel89@gmail.com>
+//		 Claudio Rodrigo Pereyra Diaz <claudiorodrigo@pereyeradiaz.com.ar>
 //
-// Copyright (c) 2013 Xamarin Inc.
+// Copyright (c) 2015 Hamekoz
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,10 +28,12 @@ using System;
 using Xwt.Backends;
 
 #if MONOMAC
-using nint = System.Int32;
-using nfloat = System.Single;
 using MonoMac.Foundation;
 using MonoMac.AppKit;
+
+
+
+
 #else
 using Foundation;
 using AppKit;
@@ -38,42 +41,36 @@ using AppKit;
 
 namespace Xwt.Mac
 {
-	public class DatePickerBackend: ViewBackend<NSDatePicker,IDatePickerEventSink>, IDatePickerBackend
+	public class CalendarBackend: ViewBackend<NSDatePicker,ICalendarEventSink>, ICalendarBackend
 	{
-		public DatePickerBackend ()
+		public CalendarBackend ()
 		{
 		}
 
 		public override void Initialize ()
 		{
 			base.Initialize ();
-			ViewObject = new MacDatePicker ();
-			Widget.DatePickerMode = NSDatePickerMode.Single;
-			Widget.DatePickerStyle = NSDatePickerStyle.TextFieldAndStepper;
-			Widget.DatePickerElements = DatePickerStyle.DateTime.ToMacValue();
-			Widget.TimeZone = NSTimeZone.LocalTimeZone;
+			ViewObject = new MacCalendar ();
 		}
 
 		public override void EnableEvent (object eventId)
 		{
 			base.EnableEvent (eventId);
-			if (eventId is DatePickerEvent)
-				Widget.Activated += HandleActivated;
+			if (eventId is CalendarEvent)
+				Widget.Activated += HandleValueChanged;
 		}
 
 		public override void DisableEvent (object eventId)
 		{
 			base.DisableEvent (eventId);
-			if (eventId is DatePickerEvent)
-				Widget.Activated -= HandleActivated;
+			if (eventId is CalendarEvent)
+				Widget.Activated -= HandleValueChanged;
 		}
 
 		void HandleActivated (object sender, EventArgs e)
 		{
-			ApplicationContext.InvokeUserCode (((IDatePickerEventSink)EventSink).ValueChanged);
+			ApplicationContext.InvokeUserCode (((ICalendarEventSink)EventSink).OnValueChanged);
 		}
-
-		#region IDatePickerBackend implementation
 
 		// NSDate timezone workaround: cache and restore the DateTimeKind of the
 		// users DateTime objects, since all conversions between DateTime and NSDate
@@ -82,7 +79,7 @@ namespace Xwt.Mac
 		DateTimeKind userMinDateKind = DateTimeKind.Unspecified;
 		DateTimeKind userMaxDateKind = DateTimeKind.Unspecified;
 
-		public DateTime DateTime {
+		public DateTime Date {
 			get {
 				if (userDateKind == DateTimeKind.Utc)
 					return ((DateTime)Widget.DateValue).ToUniversalTime ();
@@ -96,7 +93,7 @@ namespace Xwt.Mac
 			}
 		}
 
-		public DateTime MinimumDateTime {
+		public DateTime MinimumDate {
 			get {
 				if (userMinDateKind == DateTimeKind.Utc)
 					return ((DateTime)Widget.MinDate).ToUniversalTime ();
@@ -108,7 +105,7 @@ namespace Xwt.Mac
 			}
 		}
 
-		public DateTime MaximumDateTime {
+		public DateTime MaximumDate {
 			get {
 				if (userMaxDateKind == DateTimeKind.Utc)
 					return ((DateTime)Widget.MaxDate).ToUniversalTime ();
@@ -120,28 +117,29 @@ namespace Xwt.Mac
 			}
 		}
 
-		public DatePickerStyle Style {
-			get {
-				return Widget.DatePickerElements.ToXwtValue();
-			}
-			set {
-				Widget.DatePickerElements = value.ToMacValue ();
-			}
+		void HandleValueChanged (object sender, EventArgs e)
+		{
+			ApplicationContext.InvokeUserCode (delegate {
+				EventSink.OnValueChanged ();
+			});
 		}
-
-		#endregion
 	}
 
-	class MacDatePicker: NSDatePicker, IViewObject
+	class MacCalendar: NSDatePicker, IViewObject
 	{
-		public NSView View { get { return this; } }
 		public ViewBackend Backend { get; set; }
 
-		public override void ResetCursorRects ()
+		public NSView View { get { return this; } }
+
+		public MacCalendar ()
 		{
-			base.ResetCursorRects ();
-			if (Backend.Cursor != null)
-				AddCursorRect (Bounds, Backend.Cursor);
+			DatePickerStyle = NSDatePickerStyle.ClockAndCalendar;
+			DatePickerMode = NSDatePickerMode.Single;
+			Bordered = true;
+			DatePickerElements = NSDatePickerElementFlags.YearMonthDateDay;
+			DrawsBackground = true;
+			MinDate = (NSDate)DateTime.MinValue.ToUniversalTime ();
+			MaxDate = (NSDate)DateTime.MaxValue.ToUniversalTime ();
 		}
 	}
 }
