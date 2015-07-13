@@ -42,7 +42,7 @@ using System.Windows.Controls;
 namespace Xwt.WPFBackend
 {
 	public class TreeViewBackend
-		: WidgetBackend, ITreeViewBackend
+		: WidgetBackend, ITreeViewBackend, ICellRendererTarget
 	{
 		Dictionary<CellView,CellInfo> cellViews = new Dictionary<CellView, CellInfo> ();
 
@@ -513,6 +513,12 @@ namespace Xwt.WPFBackend
 			var result = VisualTreeHelper.HitTest (Tree, new System.Windows.Point (p.X, p.Y)) as PointHitTestResult;
 
 			var element = (result != null) ? result.VisualHit as FrameworkElement : null;
+			return GetRowForElement (element);
+		}
+
+		TreePosition GetRowForElement (FrameworkElement sender)
+		{
+			var element = sender;
 			while (element != null) {
 				if (element is ExTreeViewItem)
 					break;
@@ -526,6 +532,11 @@ namespace Xwt.WPFBackend
 				return null;
 
 			return (element.DataContext as TreeStoreNode);
+		}
+
+		void ICellRendererTarget.SetCurrentEventRowForElement (FrameworkElement sender)
+		{
+			CurrentEventRow = GetRowForElement (sender);
 		}
 
 		public Rectangle GetCellBounds (TreePosition pos, CellView cell, bool includeMargin)
