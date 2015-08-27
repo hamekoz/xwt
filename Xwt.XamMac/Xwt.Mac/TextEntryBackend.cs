@@ -64,6 +64,7 @@ namespace Xwt.Mac
 				MultiLine = Frontend is Xwt.TextArea;
 				Wrap = WrapMode.None;
 			}
+			Widget.StringValue = string.Empty;
 
 			canGetFocus = Widget.AcceptsFirstResponder ();
 			Frontend.MouseEntered += delegate {
