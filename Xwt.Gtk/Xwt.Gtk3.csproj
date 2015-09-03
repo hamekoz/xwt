@@ -155,6 +155,9 @@
     <Compile Include="Xwt.GtkBackend\ColorSelectorBackend.cs" />
     <Compile Include="Xwt.GtkBackend\ColorPickerBackend.cs" />
     <Compile Include="Xwt.GtkBackend\CalendarBackend.cs" />
+    <Compile Include="Xwt.GtkBackend\SelectFontDialogBackend.cs" />
+    <Compile Include="Xwt.GtkBackend\Gtk3FontChooserDialog.cs" />
+    <Compile Include="Xwt.GtkBackend\FontSelectorBackend.cs" />
     <Compile Include="Xwt.GtkBackend\TextAreaBackend.cs" />
     <Compile Include="Xwt.GtkBackend\TextAreaBackendGtk3.cs" />
   </ItemGroup>
