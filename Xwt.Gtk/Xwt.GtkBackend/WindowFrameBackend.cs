@@ -223,19 +223,47 @@ namespace Xwt.GtkBackend
 				Window.Resizable = value;
 			}
 		}
-
-		bool fullScreen;
-		bool IWindowFrameBackend.FullScreen {
+		
+		public WindowState WindowState {
 			get {
-				return fullScreen;
+				var currGdkState = Window.GdkWindow.State;
+				if (currGdkState.HasFlag (Gdk.WindowState.Iconified))
+					return WindowState.Iconified;
+				if (currGdkState.HasFlag (Gdk.WindowState.Fullscreen))
+					return WindowState.FullScreen;
+				if (currGdkState.HasFlag (Gdk.WindowState.Maximized))
+					return WindowState.Maximized;
+				return Xwt.WindowState.Normal;
 			}
 			set {
-				if (value != fullScreen) {
-					fullScreen = value;
-					if (fullScreen)
-						Window.Fullscreen ();
-					else
-						Window.Unfullscreen ();
+				var currGdkState = Window.GdkWindow.State;
+				switch (value) {
+					case Xwt.WindowState.Iconified:
+						if (!currGdkState.HasFlag (Gdk.WindowState.Iconified))
+							Window.Iconify();
+						break;
+					case Xwt.WindowState.FullScreen:
+						if (!currGdkState.HasFlag (Gdk.WindowState.Fullscreen)) {
+							if (currGdkState.HasFlag (Gdk.WindowState.Maximized)) // unmaximize first
+								Window.Unmaximize();
+							Window.Fullscreen ();
+						}
+						break;
+					case Xwt.WindowState.Maximized:
+						if (!currGdkState.HasFlag (Gdk.WindowState.Maximized)) {
+							if (currGdkState.HasFlag (Gdk.WindowState.Fullscreen)) // unfullscreen first
+								Window.Unfullscreen();
+							Window.Maximize ();
+						}
+						break;
+					default:
+						if (currGdkState.HasFlag (Gdk.WindowState.Iconified))
+							Window.Deiconify();
+						if (currGdkState.HasFlag (Gdk.WindowState.Fullscreen))
+							Window.Unfullscreen();
+						if (currGdkState.HasFlag (Gdk.WindowState.Maximized))
+							Window.Unmaximize();
+						break;
 				}
 			}
 		}

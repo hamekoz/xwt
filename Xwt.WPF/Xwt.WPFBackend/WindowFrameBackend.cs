@@ -183,20 +183,40 @@ namespace Xwt.WPFBackend
 		{
 			window.Activate ();
 		}
-		
-		bool IWindowFrameBackend.FullScreen {
+
+		bool lastFullScreenDecoratedState;
+		public Xwt.WindowState WindowState {
 			get {
-				return window.WindowState == WindowState.Maximized 
-					&& window.ResizeMode == ResizeMode.NoResize;
+				switch (this.window.WindowState) {
+					case System.Windows.WindowState.Minimized:
+						return Xwt.WindowState.Iconified;
+					case System.Windows.WindowState.Maximized:
+						if (window.WindowStyle == WindowStyle.None)
+							return Xwt.WindowState.FullScreen;
+						return  Xwt.WindowState.Maximized;
+					default:
+						return Xwt.WindowState.Normal;
+				}
 			}
 			set {
-				if (value) {
-					window.WindowState = WindowState.Maximized;
-					window.ResizeMode = ResizeMode.NoResize;
-				}
-				else {
-					window.WindowState = WindowState.Normal;
-					window.ResizeMode = ResizeMode.CanResize;
+				if (WindowState == WindowState.FullScreen)
+					window.WindowStyle = lastFullScreenDecoratedState ? WindowStyle.SingleBorderWindow : WindowStyle.None;
+				switch (value) {
+					case Xwt.WindowState.Iconified:
+						this.window.WindowState = System.Windows.WindowState.Minimized;
+						break;
+					case Xwt.WindowState.Maximized:
+						this.window.WindowState = System.Windows.WindowState.Maximized;
+						break;
+					case Xwt.WindowState.FullScreen:
+						lastFullScreenDecoratedState = window.WindowStyle != WindowStyle.None;
+						window.WindowStyle = WindowStyle.None;
+						this.window.WindowState = System.Windows.WindowState.Normal;
+						this.window.WindowState = System.Windows.WindowState.Maximized;
+						break;
+					default:
+						this.window.WindowState = System.Windows.WindowState.Normal;
+						break;
 				}
 			}
 		}
