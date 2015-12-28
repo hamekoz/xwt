@@ -158,6 +158,11 @@ namespace Xwt.GtkBackend
 			get { return requestedSize; }
 		}
 
+		string IWindowFrameBackend.Name {
+			get { return Window.Name; }
+			set { Window.Name = value; }
+		}
+
 		bool IWindowFrameBackend.Visible {
 			get {
 				return window.Visible;
