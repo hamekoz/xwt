@@ -157,22 +157,67 @@ namespace Xwt.Mac
 		public void SetFocus ()
 		{
 		}
-
-		public bool FullScreen {
+		
+		public WindowState WindowState {
 			get {
 				if (MacSystemInformation.OsVersion < MacSystemInformation.Lion)
-					return false;
+					return WindowState.Normal;
 
-				return (StyleMask & NSWindowStyle.FullScreenWindow) != 0;
-
+				if (isWindowSateDelayed) // rare case while "unfullscreening"
+					return delayedWindowState;
+				if (IsMiniaturized)
+					return WindowState.Iconified;
+				if ((StyleMask & NSWindowStyle.FullScreenWindow) != 0)
+					return WindowState.FullScreen;
+				if (IsZoomed)
+					return WindowState.Maximized;
+				else
+					return WindowState.Normal;
 			}
 			set {
 				if (MacSystemInformation.OsVersion < MacSystemInformation.Lion)
 					return;
 
-				if (value != ((StyleMask & NSWindowStyle.FullScreenWindow) != 0))
-					ToggleFullScreen (null);
+				if ((value != Xwt.WindowState.FullScreen) && ((StyleMask & NSWindowStyle.FullScreenWindow) != 0)) {
+					// always unfullscreen first
+					// and delay setting new state
+					ToggleFullScreen (this);
+					CollectionBehavior &= ~NSWindowCollectionBehavior.FullScreenPrimary;
+					isWindowSateDelayed = true;
+					delayedWindowState = value;
+					DidExitFullScreen += DelayedSetWindowState;
+					return;
+				}
+
+
+				if ((value == Xwt.WindowState.Iconified) && !IsMiniaturized) {
+					// Currently not iconified.
+					Miniaturize (this);
+				} else if ((value == Xwt.WindowState.FullScreen) && ((StyleMask & NSWindowStyle.FullScreenWindow) == 0)) {
+					// Currently not full screen.
+					CollectionBehavior |= NSWindowCollectionBehavior.FullScreenPrimary;
+					ToggleFullScreen (this);
+				} else if ((value == Xwt.WindowState.Maximized) && !IsZoomed) {
+					// Currently not maximized.
+					PerformZoom (this);
+				} else {
+					if (IsMiniaturized)
+						// Currently iconified.
+						Deminiaturize (this);
+					else if (IsZoomed)
+						// Currently full screen.
+						PerformZoom (this);
+				}
 			}
+		}
+
+		bool isWindowSateDelayed;
+		WindowState delayedWindowState;
+		void DelayedSetWindowState (object sender, EventArgs args)
+		{
+			WindowState = delayedWindowState;
+			DidExitFullScreen -= DelayedSetWindowState;
+			isWindowSateDelayed = false;
 		}
 
 		object IWindowFrameBackend.Screen {

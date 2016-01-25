@@ -3,7 +3,7 @@
 //
 // Author:
 //       Ezequiel Taranto <ezequiel89@gmail.com>
-//		 Claudio Rodrigo Pereyra Diaz <claudiorodrigo@pereyeradiaz.com.ar>
+//	 Claudio Rodrigo Pereyra Diaz <claudiorodrigo@pereyeradiaz.com.ar>
 //
 // Copyright (c) 2015 Hamekoz
 //

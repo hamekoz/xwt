@@ -284,12 +284,54 @@ namespace Xwt
 		}
 		
 		/// <summary>
+		/// Gets or sets a value indicating whether this window is iconified (true) or normal (false).
+		/// </summary>
+		/// <value><c>true</c> if the window is iconified; otherwise, <c>false</c>.</value>
+		public bool Iconified {
+			get { return WindowState == WindowState.Iconified; }
+			set {
+				if (value)
+					Backend.WindowState = WindowState.Iconified;
+				else
+					Backend.WindowState = WindowState.Normal;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets a value indicating whether this window is maximized (true) or normal (false).
+		/// </summary>
+		/// <value><c>true</c> if the window is maximized; otherwise, <c>false</c>.</value>
+		public bool Maximized {
+			get { return WindowState == WindowState.Maximized; }
+			set {
+				if (value)
+					Backend.WindowState = WindowState.Maximized;
+				else
+					Backend.WindowState = WindowState.Normal;
+			}
+		}
+
+		/// <summary>
 		/// Gets or sets a value indicating whether this window is in full screen mode
 		/// </summary>
 		/// <value><c>true</c> if the window is in full screen mode; otherwise, <c>false</c>.</value>
 		public bool FullScreen {
-			get { return Backend.FullScreen; }
-			set { Backend.FullScreen = value; }
+			get { return WindowState == WindowState.FullScreen; }
+			set {
+				if (value)
+					Backend.WindowState = WindowState.FullScreen;
+				else
+					Backend.WindowState = WindowState.Normal;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the state of the window (icon, normal, fullscreen).
+		/// </summary>
+		/// <value>The state of the window.</value>
+		public WindowState WindowState {
+			get { return Backend.WindowState; }
+			set { Backend.WindowState = value; }
 		}
 
 		/// <summary>

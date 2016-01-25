@@ -50,6 +50,7 @@ namespace Xwt
 		public static Image Zoom100 { get { return GetIcon (StockIconId.Zoom100); } }
 		public static Image Add { get { return GetIcon (StockIconId.Add); } }
 		public static Image Remove { get { return GetIcon (StockIconId.Remove); } }
+		public static Image Calendar { get { return GetIcon (StockIconId.Calendar); } }
 	}
 }
 

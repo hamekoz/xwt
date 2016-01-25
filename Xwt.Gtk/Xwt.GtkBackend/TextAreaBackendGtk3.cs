@@ -1,10 +1,10 @@
-//
-// StockIconId.cs
+﻿//
+// TextAreaBackendGtk3.cs
 //
 // Author:
-//       Lluis Sanchez <lluis@xamarin.com>
+//       Vsevolod Kukol <sevo@sevo.org>
 //
-// Copyright (c) 2013 Xamarin Inc.
+// Copyright (c) 2014 Vsevolod Kukol
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using Pango;
+using Xwt.CairoBackend;
 
-namespace Xwt.Backends
+namespace Xwt.GtkBackend
 {
-	public class StockIconId
+	public partial class TextAreaBackend
 	{
-		public const string Error = "Error";
-		public const string Warning = "Warning";
-		public const string Information = "Information";
-		public const string Question = "Question";
-		public const string OrientationPortrait = "Portrait";
-		public const string OrientationLandscape = "Landscape";
-		public const string ZoomIn = "ZoomIn";
-		public const string ZoomOut = "ZoomOut";
-		public const string ZoomFit = "ZoomFit";
-		public const string Zoom100 = "Zoom100";
-		public const string Add = "Add";
-		public const string Remove = "Remove";
-		public const string Calendar = "Calendar";
+		string placeHolderText;
+
+		public string PlaceholderText {
+			get { return placeHolderText; }
+			set {
+				if (placeHolderText != value) {
+					if (placeHolderText == null)
+						TextView.Drawn += HandleDrawn;
+					else if (value == null)
+						TextView.Drawn -= HandleDrawn;
+				}
+				placeHolderText = value;
+			}
+		}
+
+		void HandleDrawn (object o, Gtk.DrawnArgs args)
+		{
+			TextView.RenderPlaceholderText (args.Cr, placeHolderText, ref layout);
+		}
 	}
 }
 

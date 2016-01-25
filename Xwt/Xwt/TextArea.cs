@@ -1,10 +1,10 @@
-//
-// StockIconId.cs
+﻿//
+// TextBox.cs
 //
 // Author:
-//       Lluis Sanchez <lluis@xamarin.com>
+//       Vsevolod Kukol <sevo@sevo.org>
 //
-// Copyright (c) 2013 Xamarin Inc.
+// Copyright (c) 2014 Vsevolod Kukol
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using Xwt.Backends;
+using System.ComponentModel;
 
-namespace Xwt.Backends
+namespace Xwt
 {
-	public class StockIconId
+	[BackendType (typeof(ITextAreaBackend))]
+	public class TextArea: TextBox
 	{
-		public const string Error = "Error";
-		public const string Warning = "Warning";
-		public const string Information = "Information";
-		public const string Question = "Question";
-		public const string OrientationPortrait = "Portrait";
-		public const string OrientationLandscape = "Landscape";
-		public const string ZoomIn = "ZoomIn";
-		public const string ZoomOut = "ZoomOut";
-		public const string ZoomFit = "ZoomFit";
-		public const string Zoom100 = "Zoom100";
-		public const string Add = "Add";
-		public const string Remove = "Remove";
-		public const string Calendar = "Calendar";
+		public TextArea ()
+		{
+		}
+
+		ITextAreaBackend Backend {
+			get { return (ITextAreaBackend) BackendHost.Backend; }
+		}
+
+		[DefaultValue (WrapMode.None)]
+		public WrapMode Wrap {
+			get { return Backend.Wrap; }
+			set { Backend.Wrap = value; }
+		}
 	}
 }
 
