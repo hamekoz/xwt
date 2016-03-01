@@ -215,7 +215,8 @@ namespace Xwt.WPFBackend
 
 		public override object GetNativeImage (Image image)
 		{
-			return DataConverter.AsImageSource (Toolkit.GetBackend (image));
+			var source = (WpfImage)Toolkit.GetBackend (image);
+			return source.MainFrame ?? source.GetBestFrame (ApplicationContext, 1, image.Width, image.Height, true);
 		}
 
 		public override object RenderWidget (Widget widget)
@@ -228,6 +229,15 @@ namespace Xwt.WPFBackend
 			} catch (Exception ex) {
 				throw new InvalidOperationException ("Rendering element not supported", ex);
 			}
+		}
+
+		public override void RenderImage (object nativeWidget, object nativeContext, ImageDescription img, double x, double y)
+		{
+			WpfImage im = (WpfImage)img.Backend;
+			System.Windows.Media.DrawingContext dc = nativeContext as System.Windows.Media.DrawingContext;
+			FrameworkElement w = (FrameworkElement)nativeWidget;
+			if (dc != null)
+				im.Draw (ApplicationContext, dc, Util.GetScaleFactor (w), x, y, img);
 		}
 	}
 }

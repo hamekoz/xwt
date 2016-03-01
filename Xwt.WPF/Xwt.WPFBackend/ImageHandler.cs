@@ -90,7 +90,7 @@ namespace Xwt.WPFBackend
 
 		public override object CreateMultiSizeIcon (IEnumerable<object> images)
 		{
-			return new WpfImage (images.Cast<WpfImage> ().SelectMany (i => i.Frames));
+			return new WpfImage (images.Cast<WpfImage> ());
 		}
 
 		public override void SaveToStream (object backend, Stream stream, Drawing.ImageFileType fileType)
@@ -124,10 +124,10 @@ namespace Xwt.WPFBackend
 
 			switch (id) {
 				case StockIconId.Add:
-					using (var s = typeof (ImageHandler).Assembly.GetManifestResourceStream ("Xwt.WPF.icons.list-add.png"))
+					using (var s = typeof (ImageHandler).Assembly.GetManifestResourceStream ("Xwt.WPF.icons.add-16.png"))
 						return LoadFromStream (s);
 				case StockIconId.Remove:
-					using (var s = typeof (ImageHandler).Assembly.GetManifestResourceStream ("Xwt.WPF.icons.list-remove.png"))
+					using (var s = typeof (ImageHandler).Assembly.GetManifestResourceStream ("Xwt.WPF.icons.remove-16.png"))
 						return LoadFromStream (s);
 
 				case StockIconId.Error:
@@ -298,7 +298,7 @@ namespace Xwt.WPFBackend
 		public int Stride;
 		public bool PixelWritePending;
 
-		ImageFrame[] frames;
+		ImageFrame[] frames = new ImageFrame[0];
 
 		public WpfImage (ImageSource image)
 		{
@@ -311,11 +311,27 @@ namespace Xwt.WPFBackend
 		public WpfImage (IEnumerable<ImageSource> images)
 		{
 			this.frames = images.Select (f => new ImageFrame (f)).ToArray ();
+			if (frames.Length == 0)
+				throw new InvalidOperationException();
 		}
 
 		public WpfImage (IEnumerable<ImageFrame> frames)
 		{
 			this.frames = frames.ToArray ();
+			if (this.frames.Length == 0)
+				throw new InvalidOperationException();
+		}
+
+		public WpfImage (IEnumerable<WpfImage> images)
+		{
+			var first = images.First ();
+			if (first.drawCallback != null)
+				drawCallback = first.drawCallback;
+			else {
+				this.frames = images.SelectMany (i => i.Frames).ToArray ();
+				if (this.frames.Length == 0)
+					throw new InvalidOperationException ();
+			}
 		}
 
 		public WpfImage (ImageDrawCallback drawCallback)
@@ -330,7 +346,7 @@ namespace Xwt.WPFBackend
 
 		public ImageSource MainFrame
 		{
-			get { return frames[0].ImageSource; }
+			get { return frames.Length > 0 ? frames[0].ImageSource : null; }
 			set { frames[0].ImageSource = value; }
 		}
 
@@ -450,7 +466,7 @@ namespace Xwt.WPFBackend
 			if (drawCallback != null) {
 				DrawingContext c = new DrawingContext (dc, scaleFactor);
 				actx.InvokeUserCode (delegate {
-					drawCallback (c, new Rectangle (x, y, idesc.Size.Width, idesc.Size.Height));
+					drawCallback (c, new Rectangle (x, y, idesc.Size.Width, idesc.Size.Height), idesc, actx.Toolkit);
 				});
 			}
 			else {
