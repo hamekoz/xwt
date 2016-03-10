@@ -30,16 +30,18 @@ using System;
 #if MONOMAC
 using nint = System.Int32;
 using nfloat = System.Single;
+using CGRect = System.Drawing.RectangleF;
 using MonoMac.Foundation;
 using MonoMac.AppKit;
 #else
+using CoreGraphics;
 using Foundation;
 using AppKit;
 #endif
 
 namespace Xwt.Mac
 {
-	public class TextEntryBackend: ViewBackend<NSView,ITextBoxEventSink>, ITextEntryBackend, ITextAreaBackend
+	public class TextEntryBackend: ViewBackend<NSView,ITextEntryEventSink>, ITextEntryBackend
 	{
 		int cacheSelectionStart, cacheSelectionLength;
 		bool checkMouseSelection;
@@ -60,7 +62,8 @@ namespace Xwt.Mac
 				((MacComboBox)ViewObject).SetEntryEventSink (EventSink);
 			} else {
 				var view = new CustomTextField (EventSink, ApplicationContext);
-				ViewObject = new CustomAlignedContainer (EventSink, ApplicationContext, (NSView)view);
+				ViewObject = new CustomAlignedContainer (EventSink, ApplicationContext, (NSView)view) { DrawsBackground = false };
+				Container.ExpandVertically = true;
 				MultiLine = Frontend is Xwt.TextArea;
 				Wrap = WrapMode.None;
 			}
@@ -149,7 +152,7 @@ namespace Xwt.Mac
 			get {
 				if (Widget is MacComboBox)
 					return false;
-				return Widget.Cell.UsesSingleLineMode;
+				return !Widget.Cell.UsesSingleLineMode;
 			}
 			set {
 				if (Widget is MacComboBox)
@@ -307,6 +310,17 @@ namespace Xwt.Mac
 			}
 		}
 		#endregion
+
+		public override Drawing.Color BackgroundColor {
+			get {
+				return Widget.BackgroundColor.ToXwtColor ();
+			}
+			set {
+				Widget.BackgroundColor = value.ToNSColor ();
+				Widget.Cell.DrawsBackground = true;
+				Widget.Cell.BackgroundColor = value.ToNSColor ();
+			}
+		}
 	}
 	
 	class CustomTextField: NSTextField, IViewObject
@@ -350,6 +364,7 @@ namespace Xwt.Mac
 		class CustomCell : NSTextFieldCell
 		{
 			CustomEditor editor;
+			NSObject selChangeObserver;
 			public ApplicationContext Context {
 				get; set;
 			}
@@ -374,8 +389,45 @@ namespace Xwt.Mac
 						DrawsBackground = true,
 						BackgroundColor = NSColor.White,
 					};
+					selChangeObserver = NSNotificationCenter.DefaultCenter.AddObserver (new NSString ("NSTextViewDidChangeSelectionNotification"), HandleSelectionDidChange, editor);
 				}
 				return editor;
+			}
+
+			void HandleSelectionDidChange (NSNotification notif)
+			{
+				Context.InvokeUserCode (delegate {
+					EventSink.OnSelectionChanged ();
+				});
+			}
+
+			public override void DrawInteriorWithFrame (CGRect cellFrame, NSView inView)
+			{
+				base.DrawInteriorWithFrame (VerticalCenteredRectForBounds(cellFrame), inView);
+			}
+
+			public override void EditWithFrame (CGRect aRect, NSView inView, NSText editor, NSObject delegateObject, NSEvent theEvent)
+			{
+				base.EditWithFrame (VerticalCenteredRectForBounds(aRect), inView, editor, delegateObject, theEvent);
+			}
+
+			public override void SelectWithFrame (CGRect aRect, NSView inView, NSText editor, NSObject delegateObject, nint selStart, nint selLength)
+			{
+				base.SelectWithFrame (VerticalCenteredRectForBounds(aRect), inView, editor, delegateObject, selStart, selLength);
+			}
+
+			CGRect VerticalCenteredRectForBounds (CGRect aRect)
+			{
+				// multiline entries should always align on top
+				if (!UsesSingleLineMode)
+					return aRect;
+
+				var textHeight = CellSizeForBounds (aRect).Height;
+				var offset = (aRect.Height - textHeight) / 2;
+				if (offset <= 0) // do nothing if the frame is too small
+					return aRect;
+				var rect = new Rectangle (aRect.X, aRect.Y, aRect.Width, aRect.Height).Inflate (0.0, -offset);
+				return rect.ToCGRect ();
 			}
 		}
 
