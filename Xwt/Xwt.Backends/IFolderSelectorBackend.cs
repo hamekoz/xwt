@@ -1,10 +1,10 @@
-//
-// GtkMacInterop.cs
+﻿//
+// IFolderSelectorBackend.cs
 //
 // Author:
-//       Jérémie Laval <jeremie.laval@xamarin.com>
+//       Lluis Sanchez Gual <lluis@xamarin.com>
 //
-// Copyright (c) 2012 Xamarin, Inc.
+// Copyright (c) 2016 Xamarin, Inc (http://www.xamarin.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +23,44 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
 using System;
-using System.Linq;
-
-namespace Xwt.GtkBackend
+namespace Xwt.Backends
 {
-	public class GtkMacInterop
+	public interface IFolderSelectorBackend: IWidgetBackend
 	{
-		const string LibGdk = "libgdk-quartz-2.0.dylib";
-		const string LibGtk = "libgtk-quartz-2.0";
-		
-		[System.Runtime.InteropServices.DllImport (LibGtk)]
-		extern static IntPtr gtk_ns_view_new (IntPtr nsview);
-		
-		public static Gtk.Widget NSViewToGtkWidget (object view)
-		{
-			var prop = view.GetType ().GetProperty ("Handle");
-			var handle = prop.GetValue (view, null);
-			return new Gtk.Widget (gtk_ns_view_new ((IntPtr)handle));
-		}
+		/// <summary>
+		/// Gets or sets the current folder.
+		/// </summary>
+		/// <value>The current folder.</value>
+		string CurrentFolder { get; set; }
 
-		public static Gtk.Window GetGtkWindow (object window)
-		{
-			if (window == null)
-				return null;
-			
-			var prop = window.GetType ().GetProperty ("Handle");
-			var handle = prop.GetValue (window, null);
-			if (handle is IntPtr) {
-				var toplevels = Gtk.Window.ListToplevels ();
-				return toplevels.FirstOrDefault (w => w.IsRealized && GtkWorkarounds.GetGtkWindowNativeHandle (w) == (IntPtr)handle);
-			}
-			return null;
-		}
+		/// <summary>
+		/// Gets or sets the path to the folder
+		/// </summary>
+		/// <value>The name of the folder.</value>
+		string Folder { get; set; }
+
+		/// <summary>
+		/// Gets or sets the title of the folder selection dialog
+		/// </summary>
+		/// <value>The title.</value>
+		string Title { get; set; }
+
+		/// <summary>
+		/// Gets or sets a value indicating whether the user can create folders when using the folder selection dialog
+		/// </summary>
+		bool CanCreateFolders { get; set; }
+
+	}
+
+	public interface IFolderSelectorEventSink : IWidgetEventSink
+	{
+		void OnFolderChanged ();
+	}
+
+	public enum FolderSelectorEvent
+	{
+		FolderChanged
 	}
 }
 

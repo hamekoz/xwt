@@ -1,10 +1,10 @@
-//
-// GtkMacInterop.cs
+﻿//
+// FolderSelectorSample.cs
 //
 // Author:
-//       Jérémie Laval <jeremie.laval@xamarin.com>
+//       Lluis Sanchez Gual <lluis@xamarin.com>
 //
-// Copyright (c) 2012 Xamarin, Inc.
+// Copyright (c) 2016 Xamarin, Inc (http://www.xamarin.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,39 +23,21 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
 using System;
-using System.Linq;
+using Xwt;
 
-namespace Xwt.GtkBackend
+namespace Samples
 {
-	public class GtkMacInterop
+	public class FolderSelectorSample: VBox
 	{
-		const string LibGdk = "libgdk-quartz-2.0.dylib";
-		const string LibGtk = "libgtk-quartz-2.0";
-		
-		[System.Runtime.InteropServices.DllImport (LibGtk)]
-		extern static IntPtr gtk_ns_view_new (IntPtr nsview);
-		
-		public static Gtk.Widget NSViewToGtkWidget (object view)
+		public FolderSelectorSample ()
 		{
-			var prop = view.GetType ().GetProperty ("Handle");
-			var handle = prop.GetValue (view, null);
-			return new Gtk.Widget (gtk_ns_view_new ((IntPtr)handle));
-		}
-
-		public static Gtk.Window GetGtkWindow (object window)
-		{
-			if (window == null)
-				return null;
-			
-			var prop = window.GetType ().GetProperty ("Handle");
-			var handle = prop.GetValue (window, null);
-			if (handle is IntPtr) {
-				var toplevels = Gtk.Window.ListToplevels ();
-				return toplevels.FirstOrDefault (w => w.IsRealized && GtkWorkarounds.GetGtkWindowNativeHandle (w) == (IntPtr)handle);
-			}
-			return null;
+			FolderSelector fsel;
+			Label label;
+			PackStart (new Label ("An open file selector:"));
+			PackStart (fsel = new FolderSelector ());
+			PackStart (label = new Label ());
+			fsel.FolderChanged += (sender, e) => { label.Text = "Folder changed: " + fsel.Folder; };
 		}
 	}
 }

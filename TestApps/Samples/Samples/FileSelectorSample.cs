@@ -1,10 +1,10 @@
-//
-// GtkMacInterop.cs
+﻿//
+// FileSelector.cs
 //
 // Author:
-//       Jérémie Laval <jeremie.laval@xamarin.com>
+//       Lluis Sanchez Gual <lluis@xamarin.com>
 //
-// Copyright (c) 2012 Xamarin, Inc.
+// Copyright (c) 2016 Xamarin, Inc (http://www.xamarin.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,39 +23,28 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
 using System;
-using System.Linq;
+using Xwt;
 
-namespace Xwt.GtkBackend
+namespace Samples
 {
-	public class GtkMacInterop
+	public class FileSelectorSample: VBox
 	{
-		const string LibGdk = "libgdk-quartz-2.0.dylib";
-		const string LibGtk = "libgtk-quartz-2.0";
-		
-		[System.Runtime.InteropServices.DllImport (LibGtk)]
-		extern static IntPtr gtk_ns_view_new (IntPtr nsview);
-		
-		public static Gtk.Widget NSViewToGtkWidget (object view)
+		public FileSelectorSample ()
 		{
-			var prop = view.GetType ().GetProperty ("Handle");
-			var handle = prop.GetValue (view, null);
-			return new Gtk.Widget (gtk_ns_view_new ((IntPtr)handle));
-		}
+			FileSelector fsel;
+			Label label;
+			PackStart (new Label("An open file selector:"));
+			PackStart (fsel = new FileSelector ());
+			PackStart (label = new Label ());
+			fsel.FileChanged += (sender, e) => { label.Text = "File changed: " + fsel.FileName; };
 
-		public static Gtk.Window GetGtkWindow (object window)
-		{
-			if (window == null)
-				return null;
-			
-			var prop = window.GetType ().GetProperty ("Handle");
-			var handle = prop.GetValue (window, null);
-			if (handle is IntPtr) {
-				var toplevels = Gtk.Window.ListToplevels ();
-				return toplevels.FirstOrDefault (w => w.IsRealized && GtkWorkarounds.GetGtkWindowNativeHandle (w) == (IntPtr)handle);
-			}
-			return null;
+			FileSelector fsel2;
+			Label label2;
+			PackStart (new Label ("An save file selector:") { MarginTop = 12 });
+			PackStart (fsel2 = new FileSelector { FileSelectionMode = FileSelectionMode.Save });
+			PackStart (label2 = new Label ());
+			fsel2.FileChanged += (sender, e) => label2.Text = "File changed: " + fsel2.FileName;
 		}
 	}
 }

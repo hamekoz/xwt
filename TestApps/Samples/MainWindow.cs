@@ -73,6 +73,8 @@ namespace Samples
 			AddSample (w, "CheckBox", typeof(Checkboxes));
 			AddSample (w, "Clipboard", typeof(ClipboardSample));
 			AddSample (w, "ColorSelector", typeof(ColorSelectorSample));
+			AddSample (w, "FileSelector", typeof (FileSelectorSample));
+			AddSample (w, "FolderSelector", typeof (FolderSelectorSample));
 			AddSample (w, "FontSelector", typeof(FontSelectorSample));
 			AddSample (w, "ComboBox", typeof(ComboBoxes));
 			AddSample (w, "DatePicker", typeof(DatePickerSample));
