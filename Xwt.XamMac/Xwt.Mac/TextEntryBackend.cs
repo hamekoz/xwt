@@ -274,6 +274,10 @@ namespace Xwt.Mac
 			}
 		}
 
+		public bool HasCompletions {
+			get { return false; }
+		}
+
 		public void SetCompletions (string[] completions)
 		{
 		}
