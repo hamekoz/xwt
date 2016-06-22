@@ -1,10 +1,10 @@
-//
-// IDatePickerBackend.cs
+﻿//
+// ToolkitDefaults.cs
 //
 // Author:
-//       Jérémie Laval <jeremie.laval@xamarin.com>
+//       Vsevolod Kukol <sevoku@xamarin.com>
 //
-// Copyright (c) 2012 Xamarin, Inc.
+// Copyright (c) 2016 Xamarin, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,20 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
-using System;
-
-namespace Xwt.Backends
+namespace Xwt
 {
-	public interface IDatePickerBackend : IWidgetBackend
+	public class ToolkitDefaults
 	{
-		DateTime DateTime { get; set; }
+		/// <summary>
+		/// Gets the customizable message dialog defaults.
+		/// </summary>
+		/// <value>The message dialog defaults.</value>
+		public MessageDialogDefaults MessageDialog { get; private set; }
 
-		DateTime MinimumDateTime { get; set; }
-
-		DateTime MaximumDateTime { get; set; }
-
-		DatePickerStyle Style { get; set; }
-
-		bool ReadOnly { get; set; }
-	}
-
-	public interface IDatePickerEventSink: IWidgetEventSink
-	{
-		void ValueChanged ();
-	}
-
-	public enum DatePickerEvent
-	{
-		ValueChanged
+		public ToolkitDefaults ()
+		{
+			MessageDialog = new MessageDialogDefaults ();
+		}
 	}
 }
 

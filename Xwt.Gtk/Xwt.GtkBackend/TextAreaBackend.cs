@@ -100,7 +100,7 @@ namespace Xwt.GtkBackend
 				return TextView.Editable;
 			}
 			set {
-				TextView.Editable = value;
+				TextView.Editable = !value;
 				TextView.CursorVisible = !value;
 			}
 		}
