@@ -34,6 +34,7 @@ namespace Xwt.GtkBackend
 	public class WindowFrameBackend: IWindowFrameBackend
 	{
 		Gtk.Window window;
+		IntPtr nativeHandle = IntPtr.Zero;
 		IWindowFrameEventSink eventSink;
 		WindowFrame frontend;
 		Size requestedSize;
@@ -52,6 +53,18 @@ namespace Xwt.GtkBackend
 				window = value;
 				window.Realized += HandleRealized;
 				window.WindowStateEvent += HandleWindowStateEvent;
+			}
+		}
+
+		object IWindowFrameBackend.Window {
+			get { return Window; }
+		}
+
+		public IntPtr NativeHandle {
+			get {
+				if (nativeHandle == IntPtr.Zero)
+					nativeHandle = GtkWorkarounds.GetGtkWindowNativeHandle (Window);
+				return nativeHandle;
 			}
 		}
 
@@ -221,7 +234,7 @@ namespace Xwt.GtkBackend
 
 		void IWindowFrameBackend.SetTransientFor (IWindowFrameBackend window)
 		{
-			Window.TransientFor = ((WindowFrameBackend)window).Window;
+			Window.TransientFor = ApplicationContext.Toolkit.GetNativeWindow (window) as Gtk.Window;
 		}
 
 		public bool Resizable {

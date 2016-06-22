@@ -1,10 +1,10 @@
 ﻿//
-// GtkPlatformBackend.cs
+// FolderSelectorSample.cs
 //
 // Author:
 //       Lluis Sanchez Gual <lluis@xamarin.com>
 //
-// Copyright (c) 2014 Xamarin, Inc (http://www.xamarin.com)
+// Copyright (c) 2016 Xamarin, Inc (http://www.xamarin.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-using Xwt.Backends;
+using Xwt;
 
-namespace Xwt.GtkBackend
+namespace Samples
 {
-	public class GtkPlatformBackend
+	public class FolderSelectorSample: VBox
 	{
-		public virtual void Initialize (ToolkitEngineBackend toolit)
+		public FolderSelectorSample ()
 		{
-		}
-
-		public virtual Type GetBackendImplementationType (Type backendType)
-		{
-			return null;
+			FolderSelector fsel;
+			Label label;
+			PackStart (new Label ("An open file selector:"));
+			PackStart (fsel = new FolderSelector ());
+			PackStart (label = new Label ());
+			fsel.FolderChanged += (sender, e) => { label.Text = "Folder changed: " + fsel.Folder; };
 		}
 	}
 }

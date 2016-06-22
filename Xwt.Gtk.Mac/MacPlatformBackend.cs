@@ -26,6 +26,8 @@
 using System;
 using Xwt.GtkBackend;
 using Xwt.Backends;
+using AppKit;
+using Xwt.Mac;
 
 namespace Xwt.Gtk.Mac
 {
@@ -37,6 +39,16 @@ namespace Xwt.Gtk.Mac
 			toolit.RegisterBackend <DesktopBackend,GtkMacDesktopBackend> ();
 			toolit.RegisterBackend <FontBackendHandler,GtkMacFontBackendHandler> ();
 			toolit.RegisterBackend <IPopoverBackend,GtkMacPopoverBackend> ();
+			toolit.RegisterBackend <IOpenFileDialogBackend, GtkMacOpenFileDialogBackend> ();
+			toolit.RegisterBackend <ISaveFileDialogBackend, GtkMacSaveFileDialogBackend> ();
+			toolit.RegisterBackend <ISelectFolderDialogBackend, GtkMacSelectFolderBackend> ();
+		}
+
+		public override Type GetBackendImplementationType (Type backendType)
+		{
+			if (backendType == typeof (IOpenFileDialogBackend) || backendType == typeof (ISaveFileDialogBackend) || backendType == typeof (ISelectFolderDialogBackend))
+				Xwt.Mac.NSApplicationInitializer.Initialize ();
+			return base.GetBackendImplementationType (backendType);
 		}
 	}
 }

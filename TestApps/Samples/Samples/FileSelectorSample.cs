@@ -1,10 +1,10 @@
 ﻿//
-// GtkPlatformBackend.cs
+// FileSelector.cs
 //
 // Author:
 //       Lluis Sanchez Gual <lluis@xamarin.com>
 //
-// Copyright (c) 2014 Xamarin, Inc (http://www.xamarin.com)
+// Copyright (c) 2016 Xamarin, Inc (http://www.xamarin.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-using Xwt.Backends;
+using Xwt;
 
-namespace Xwt.GtkBackend
+namespace Samples
 {
-	public class GtkPlatformBackend
+	public class FileSelectorSample: VBox
 	{
-		public virtual void Initialize (ToolkitEngineBackend toolit)
+		public FileSelectorSample ()
 		{
-		}
+			FileSelector fsel;
+			Label label;
+			PackStart (new Label("An open file selector:"));
+			PackStart (fsel = new FileSelector ());
+			PackStart (label = new Label ());
+			fsel.FileChanged += (sender, e) => { label.Text = "File changed: " + fsel.FileName; };
 
-		public virtual Type GetBackendImplementationType (Type backendType)
-		{
-			return null;
+			FileSelector fsel2;
+			Label label2;
+			PackStart (new Label ("An save file selector:") { MarginTop = 12 });
+			PackStart (fsel2 = new FileSelector { FileSelectionMode = FileSelectionMode.Save });
+			PackStart (label2 = new Label ());
+			fsel2.FileChanged += (sender, e) => label2.Text = "File changed: " + fsel2.FileName;
 		}
 	}
 }
