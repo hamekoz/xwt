@@ -61,6 +61,15 @@ namespace Xwt.GtkBackend
 			}
 		}
 
+		public bool ReadOnly {
+			get {
+				return !Widget.IsEditable;
+			}
+			set {
+				Widget.IsEditable = !value;
+			}
+		}
+
 		public DateTime MinimumDateTime {
 			get {
 				return Widget.MinimumDateTime;
@@ -508,6 +517,17 @@ namespace Xwt.GtkBackend
 				ExpandVertical = false,
 				ExpandHorizontal = false,
 			};
+
+			bool editable;
+
+			public bool IsEditable {
+				get{ return editable; }
+				set {
+					editable = value;
+					datepickerentry.CanFocus = toggleButton.Sensitive = datepickerentry.IsEditable = editable;
+				}
+			}
+
 			readonly Button nowButton = new Button {
 				Label = "Today",
 			};
