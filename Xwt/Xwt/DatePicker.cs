@@ -123,6 +123,12 @@ namespace Xwt
 			set { Backend.ReadOnly = value; }
 		}
 
+		[DefaultValue (false)]
+		public bool DisableButton {
+			get { return Backend.DisableButton; }
+			set { Backend.DisableButton = value; }
+		}
+
 		protected virtual void OnValueChanged (EventArgs e)
 		{
 			if (valueChanged != null)

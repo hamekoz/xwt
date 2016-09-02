@@ -70,6 +70,15 @@ namespace Xwt.GtkBackend
 			}
 		}
 
+		public bool DisableButton {
+			get {
+				return !Widget.DisableButton;
+			}
+			set {
+				Widget.DisableButton = !value;
+			}
+		}
+
 		public DateTime MinimumDateTime {
 			get {
 				return Widget.MinimumDateTime;
@@ -525,6 +534,15 @@ namespace Xwt.GtkBackend
 				set {
 					editable = value;
 					datepickerentry.CanFocus = toggleButton.Sensitive = datepickerentry.IsEditable = editable;
+				}
+			}
+
+			bool disableButton;
+
+			public bool DisableButton {
+				get{ return disableButton; }
+				set {
+					toggleButton.Sensitive = value;
 				}
 			}
 

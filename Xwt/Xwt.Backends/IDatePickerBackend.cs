@@ -39,6 +39,8 @@ namespace Xwt.Backends
 		DatePickerStyle Style { get; set; }
 
 		bool ReadOnly { get; set; }
+
+		bool DisableButton { get; set; }
 	}
 
 	public interface IDatePickerEventSink: IWidgetEventSink
