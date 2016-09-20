@@ -107,12 +107,14 @@ namespace Xwt.Mac
 		{
 			buttonBox.Clear ();
 
-			foreach (var b in buttonList) {
+			foreach (var b in buttonList.Reverse ()) {
 				var button = new Button { Font = Font.SystemFont };
 				var tb = b;
 				button.Clicked += delegate {
 					OnClicked (tb);
 				};
+				button.MinWidth = 77; // Dialog buttons have a minimal width of 77px on Mac
+
 				buttonBox.PackEnd (button);
 				buttons [b] = button;
 				UpdateButton (b, button);
@@ -143,6 +145,11 @@ namespace Xwt.Mac
 			realButton.Image = b.Image;
 			realButton.Sensitive = b.Sensitive;
 			realButton.Visible = b.Visible;
+
+			// Dialog buttons on Mac have a 8px horizontal padding
+			realButton.WidthRequest = -1;
+			var s = realButton.Surface.GetPreferredSize ();
+			realButton.WidthRequest = s.Width + 16;
 		}
 
 		public void RunLoop (IWindowFrameBackend parent)

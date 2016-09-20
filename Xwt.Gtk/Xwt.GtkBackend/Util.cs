@@ -39,20 +39,20 @@ namespace Xwt.GtkBackend
 		static Dictionary<TransferDataType, Gtk.TargetEntry[]> dragTargets = new Dictionary<TransferDataType, Gtk.TargetEntry[]> ();
 		static Dictionary<string, TransferDataType> atomToType = new Dictionary<string, TransferDataType> ();
 		static Size[] iconSizes = new Size[7];
-
+		
 		static Util ()
 		{
 			for (int i = 0; i < iconSizes.Length; i++) {
 				int w, h;
 				if (!Gtk.Icon.SizeLookup ((Gtk.IconSize)i, out w, out h))
 					w = h = -1;
-				iconSizes [i].Width = w;
-				iconSizes [i].Height = h;
+				iconSizes[i].Width = w;
+				iconSizes[i].Height = h;
 			}
 			if (Platform.IsWindows) {
 				// Workaround for an issue in GTK for Windows. In windows Menu-sized icons are not 16x16, but 14x14
-				iconSizes [(int)Gtk.IconSize.Menu].Width = 16;
-				iconSizes [(int)Gtk.IconSize.Menu].Height = 16;
+				iconSizes[(int)Gtk.IconSize.Menu].Width = 16;
+				iconSizes[(int)Gtk.IconSize.Menu].Height = 16;
 			}
 		}
 
@@ -63,7 +63,7 @@ namespace Xwt.GtkBackend
 				SetSelectionData (args.SelectionData, t.Id, val);
 			}
 		}
-
+		
 		public static void SetSelectionData (Gtk.SelectionData data, string atomType, object val)
 		{
 			if (val == null)
@@ -72,13 +72,14 @@ namespace Xwt.GtkBackend
 				data.Text = (string)val;
 			else if (val is Xwt.Drawing.Image) {
 				var bmp = ((Image)val).ToBitmap ();
-				data.SetPixbuf (((GtkImage)Toolkit.GetBackend (bmp)).Frames [0].Pixbuf);
-			} else {
+				data.SetPixbuf (((GtkImage)Toolkit.GetBackend (bmp)).Frames[0].Pixbuf);
+			}
+			else {
 				var at = Gdk.Atom.Intern (atomType, false);
 				data.Set (at, 0, TransferDataSource.SerializeValue (val));
 			}
 		}
-
+		
 		public static bool GetSelectionData (ApplicationContext context, Gtk.SelectionData data, TransferDataStore target)
 		{
 			TransferDataType type = Util.AtomToType (data.Target.Name);
@@ -90,20 +91,21 @@ namespace Xwt.GtkBackend
 			else if (data.TargetsIncludeImage (false))
 				target.AddImage (context.Toolkit.WrapImage (data.Pixbuf));
 			else if (type == TransferDataType.Uri) {
-				var uris = System.Text.Encoding.UTF8.GetString (data.Data).Split ('\n').Where (u => !string.IsNullOrEmpty (u)).Select (u => new Uri (u)).ToArray ();
+				var uris = System.Text.Encoding.UTF8.GetString (data.Data).Split ('\n').Where (u => !string.IsNullOrEmpty(u)).Select (u => new Uri (u)).ToArray ();
 				target.AddUris (uris);
-			} else
+			}
+			else
 				target.AddValue (type, data.Data);
 			return true;
 		}
-
+		
 		internal static TransferDataType AtomToType (string targetName)
 		{
 			TransferDataType type;
 			atomToType.TryGetValue (targetName, out type);
 			return type;
 		}
-
+		
 		internal static TransferDataType[] GetDragTypes (Gdk.Atom[] dropTypes)
 		{
 			List<TransferDataType> types = new List<TransferDataType> ();
@@ -114,7 +116,7 @@ namespace Xwt.GtkBackend
 			}
 			return types.ToArray ();
 		}
-
+		
 		public static Gtk.TargetList BuildTargetTable (TransferDataType[] types)
 		{
 			var tl = new Gtk.TargetList ();
@@ -122,7 +124,7 @@ namespace Xwt.GtkBackend
 				tl.AddTable (CreateTargetEntries (tt));
 			return tl;
 		}
-
+		
 		static Gtk.TargetEntry[] CreateTargetEntries (TransferDataType type)
 		{
 			lock (dragTargets) {
@@ -136,7 +138,8 @@ namespace Xwt.GtkBackend
 					Gtk.TargetList list = new Gtk.TargetList ();
 					list.AddUriTargets (id);
 					entries = (Gtk.TargetEntry[])list;
-				} else if (type == TransferDataType.Text) {
+				}
+				else if (type == TransferDataType.Text) {
 					Gtk.TargetList list = new Gtk.TargetList ();
 					list.AddTextTargets (id);
 					//HACK: work around gtk_selection_data_set_text causing crashes on Mac w/ QuickSilver, Clipbard History etc.
@@ -156,7 +159,8 @@ namespace Xwt.GtkBackend
 						atom = Gdk.Atom.Intern ("text/rtf", false);
 					}
 					entries = new Gtk.TargetEntry[] { new Gtk.TargetEntry (atom, 0, id) };
-				} else if (type == TransferDataType.Html) {
+				}
+				else if (type == TransferDataType.Html) {
 					Gdk.Atom atom;
 					if (Platform.IsMac) {
 						atom = Gdk.Atom.Intern ("Apple HTML pasteboard type", false); //TODO: use public.rtf when dep on MacOS 10.6
@@ -166,7 +170,13 @@ namespace Xwt.GtkBackend
 						atom = Gdk.Atom.Intern ("text/html", false);
 					}
 					entries = new Gtk.TargetEntry[] { new Gtk.TargetEntry (atom, 0, id) };
-				} else {
+				}
+				else if (type == TransferDataType.Image) {
+					Gtk.TargetList list = new Gtk.TargetList ();
+					list.AddImageTargets (id, true);
+					entries = (Gtk.TargetEntry[])list;
+				}
+				else {
 					entries = new Gtk.TargetEntry[] { new Gtk.TargetEntry (Gdk.Atom.Intern ("application/" + type.Id, false), 0, id) };
 				}
 				
@@ -174,8 +184,8 @@ namespace Xwt.GtkBackend
 					atomToType [a] = type;
 				return dragTargets [type] = entries;
 			}
-		}
-
+		}	
+		
 		static Dictionary<string,string> icons;
 
 		public static GtkImage ToGtkStock (string id)
@@ -207,7 +217,7 @@ namespace Xwt.GtkBackend
 		{
 			// Find the size that better fits the requested size
 
-			for (int n = 0; n < iconSizes.Length; n++) {
+			for (int n=0; n<iconSizes.Length; n++) {
 				if (availablesizes != null && !availablesizes.Contains ((Gtk.IconSize)n))
 					continue;
 				if (size <= iconSizes [n].Width)
@@ -224,7 +234,7 @@ namespace Xwt.GtkBackend
 			var s = GetBestSizeFit (size);
 			return iconSizes [(int)s].Width;
 		}
-
+		
 		public static ImageDescription WithDefaultSize (this ImageDescription image, Gtk.IconSize defaultIconSize)
 		{
 			if (image.Size.IsZero) {
