@@ -30,8 +30,7 @@ using System.ComponentModel;
 
 namespace Xwt
 {
-	public enum DatePickerStyle
-	{
+	public enum DatePickerStyle {
 		Time,
 		Date,
 		DateTime
@@ -61,7 +60,7 @@ namespace Xwt
 
 		static DatePicker ()
 		{
-			MapEvent (DatePickerEvent.ValueChanged, typeof(Label), "OnValueChanged");
+			MapEvent (DatePickerEvent.ValueChanged, typeof (DatePicker), "OnValueChanged");
 		}
 
 		protected new class WidgetBackendHost: Widget.WidgetBackendHost, IDatePickerEventSink

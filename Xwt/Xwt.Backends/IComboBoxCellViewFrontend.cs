@@ -1,10 +1,10 @@
-//
-// TextFormat.cs
+﻿//
+// IComboBoxCellViewFrontend.cs
 //
 // Author:
-//       Alex Corrado <corrado@xamarin.com>
+//       Lluis Sanchez Gual <lluis@xamarin.com>
 //
-// Copyright (c) 2012 Xamarin Inc.
+// Copyright (c) 2016 Xamarin, Inc (http://www.xamarin.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,27 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
 using System;
-using System.IO;
 
-using Xwt.Backends;
-
-namespace Xwt.Formats
+namespace Xwt.Backends
 {
-	public abstract class TextFormat
+	public interface IComboBoxCellViewFrontend: ICellViewFrontend
 	{
-		public static readonly TextFormat Markdown = new MarkdownTextFormat ();
-		public static readonly TextFormat Plain = new PlainTextFormat ();
-		public static readonly TextFormat Markup = new MarkupTextFormat ();
+		IDataField<string> SelectedTextField { get; }
+		IDataField<int> SelectedIndexField { get; }
+		IDataField<object> SelectedItemField { get; }
+		IDataField<bool> EditableField { get; }
+		IDataField<ItemCollection> ItemsField { get; }
+		IDataField<IListDataSource> ItemsSourceField { get; }
 
-		// Parses the given input stream into the given buffer
-		public abstract void Parse (Stream input, IRichTextBuffer buffer);
+		string SelectedText { get; }
+
+		bool Editable { get; }
+
+		ItemCollection Items { get; }
+
+		IListDataSource ItemsSource { get; }
+
+		bool RaiseSelectionChanged ();
 	}
 }
-
