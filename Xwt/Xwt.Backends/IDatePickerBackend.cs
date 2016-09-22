@@ -40,7 +40,7 @@ namespace Xwt.Backends
 
 		bool ReadOnly { get; set; }
 
-		bool DisableButton { get; set; }
+		bool WithCalendarButton { get; set; }
 	}
 
 	public interface IDatePickerEventSink: IWidgetEventSink

@@ -70,12 +70,12 @@ namespace Xwt.GtkBackend
 			}
 		}
 
-		public bool DisableButton {
+		public bool WithCalendarButton {
 			get {
-				return !Widget.DisableButton;
+				return Widget.WithCalendarButton;
 			}
 			set {
-				Widget.DisableButton = !value;
+				Widget.WithCalendarButton = value;
 			}
 		}
 
@@ -537,12 +537,10 @@ namespace Xwt.GtkBackend
 				}
 			}
 
-			bool disableButton;
-
-			public bool DisableButton {
-				get{ return disableButton; }
+			public bool WithCalendarButton {
+				get{ return toggleButton.Visible; }
 				set {
-					toggleButton.Sensitive = value;
+					toggleButton.Visible = value;
 				}
 			}
 
