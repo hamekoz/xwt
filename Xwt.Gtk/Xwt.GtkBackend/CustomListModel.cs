@@ -27,7 +27,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Gtk;
-
 #if XWT_GTK3
 using TreeModelImplementor = Gtk.ITreeModelImplementor;
 #endif
@@ -43,11 +42,11 @@ namespace Xwt.GtkBackend
 		int counter = 1;
 		Gtk.TreeModelAdapter adapter;
 		Gtk.Widget parent;
-
-		public CustomListModel (IntPtr p) : base (p)
+		
+		public CustomListModel (IntPtr p): base (p)
 		{
 		}
-
+		
 		public CustomListModel (IListDataSource source, Gtk.Widget w)
 		{
 			parent = w;
@@ -60,14 +59,18 @@ namespace Xwt.GtkBackend
 			source.RowsReordered += HandleRowsReordered;
 		}
 
-		//		public override void Dispose ()
-		//		{
-		//			base.Dispose ();
-		//			source.RowChanged -= HandleRowChanged;
-		//			source.RowDeleted -= HandleRowDeleted;
-		//			source.RowInserted -= HandleRowInserted;
-		//			source.RowsReordered -= HandleRowsReordered;
-		//		}
+		#if XWT_GTK3
+		protected override void Dispose(bool disposing)
+		#else
+		public override void Dispose ()
+		#endif
+		{
+			base.Dispose ();
+			source.RowChanged -= HandleRowChanged;
+			source.RowDeleted -= HandleRowDeleted;
+			source.RowInserted -= HandleRowInserted;
+			source.RowsReordered -= HandleRowsReordered;
+		}
 
 		void HandleRowsReordered (object sender, ListRowOrderEventArgs e)
 		{
@@ -99,11 +102,11 @@ namespace Xwt.GtkBackend
 			adapter.EmitRowChanged (p, it);
 			parent.QueueResize ();
 		}
-
+		
 		public Gtk.TreeModelAdapter Store {
 			get { return adapter; }
 		}
-
+		
 		Gtk.TreeIter IterFromNode (int node)
 		{
 			int gch;
@@ -116,7 +119,7 @@ namespace Xwt.GtkBackend
 			result.UserData = (IntPtr)gch;
 			return result;
 		}
-
+		
 		int NodeFromIter (Gtk.TreeIter iter)
 		{
 			int node;
@@ -124,17 +127,16 @@ namespace Xwt.GtkBackend
 			nodeHash.TryGetValue (gch, out node);
 			return node;
 		}
-
+		
 		#region TreeModelImplementor implementation
-
 		public GLib.GType GetColumnType (int index)
 		{
 			return (GLib.GType)colTypes [index];
 		}
 
 		public bool GetIter (out Gtk.TreeIter iter, Gtk.TreePath path)
-		{
-			iter = Gtk.TreeIter.Zero;
+        {
+            iter = Gtk.TreeIter.Zero;
 			if (path.Indices.Length == 0)
 				return false;
 			int row = path.Indices [0];
@@ -150,7 +152,7 @@ namespace Xwt.GtkBackend
 			int row = NodeFromIter (iter);
 			return new Gtk.TreePath (new int[] { row });
 		}
-
+		
 		public void GetValue (Gtk.TreeIter iter, int column, ref GLib.Value value)
 		{
 			int row = NodeFromIter (iter);
@@ -181,8 +183,8 @@ namespace Xwt.GtkBackend
 		#endif
 
 		public bool IterChildren (out Gtk.TreeIter iter, Gtk.TreeIter parent)
-		{
-			iter = Gtk.TreeIter.Zero;
+        {
+            iter = Gtk.TreeIter.Zero;
 			return false;
 		}
 
@@ -235,7 +237,6 @@ namespace Xwt.GtkBackend
 				return colTypes.Length;
 			}
 		}
-
 		#endregion
 	}
 }
