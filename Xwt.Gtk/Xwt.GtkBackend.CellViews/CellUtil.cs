@@ -67,9 +67,8 @@ namespace Xwt.GtkBackend
 				crd = new CustomCellRendererImage ();
 			} else if (view is ICanvasCellViewFrontend) {
 				crd = new CustomCellRenderer ();
-//			}
-//			else if (view is IComboBoxCellViewFrontend) {
-//				crd = new CustomCellRendererComboBox ();
+			} else if (view is IComboBoxCellViewFrontend) {
+				crd = new CustomCellRendererComboBox ();
 			} else
 				throw new NotSupportedException ("Unknown cell view type: " + view.GetType ());
 
