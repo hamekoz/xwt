@@ -50,7 +50,7 @@ namespace Xwt.GtkBackend
 			Label.Realized += HandleStyleUpdate;
 			Label.StyleSet += HandleStyleUpdate;
 		}
-		
+
 		new ILabelEventSink EventSink {
 			get { return (ILabelEventSink)base.EventSink; }
 		}
@@ -58,9 +58,9 @@ namespace Xwt.GtkBackend
 		protected Gtk.Label Label {
 			get {
 				if (Widget is Gtk.Label)
-					return (Gtk.Label) Widget;
+					return (Gtk.Label)Widget;
 				else
-					return (Gtk.Label) ((Gtk.EventBox)base.Widget).Child;
+					return (Gtk.Label)((Gtk.EventBox)base.Widget).Child;
 			}
 		}
 
@@ -99,7 +99,7 @@ namespace Xwt.GtkBackend
 				}
 			}
 		}
-		
+
 		void HandleButtonReleaseEvent (object o, Gtk.ButtonReleaseEventArgs args)
 		{
 			var li = FindLink (args.Event.X, args.Event.Y);
@@ -109,9 +109,10 @@ namespace Xwt.GtkBackend
 					EventSink.OnLinkClicked (li.Target);
 				});
 				args.RetVal = true;
-			};
+			}
+			;
 		}
-		
+
 		void HandleLeaveNotifyEvent (object o, Gtk.LeaveNotifyEventArgs args)
 		{
 			if (mouseInLink) {
@@ -159,16 +160,18 @@ namespace Xwt.GtkBackend
 		}
 
 		FormattedText formattedText;
+
 		public void SetFormattedText (FormattedText text)
 		{
 			Label.Text = text.Text;
 			formattedText = text;
 			var list = new FastPangoAttrList ();
-			if (Label.IsRealized) {
-				var color = (Gdk.Color)Label.StyleGetProperty ("link-color");
-				if (!color.Equals (Gdk.Color.Zero))
-					list.DefaultLinkColor = color;
-			}
+			//HACK cpereyra
+//			if (Label.IsRealized) {
+//				var color = (Gdk.Color)Label.StyleGetProperty ("link-color");
+//				if (!color.Equals (Gdk.Color.Zero))
+//					list.DefaultLinkColor = color;
+//			}
 			indexer = new TextIndexer (text.Text);
 			list.AddAttributes (indexer, text.Attributes);
 			gtk_label_set_attributes (Label.Handle, list.Handle);
@@ -203,7 +206,7 @@ namespace Xwt.GtkBackend
 			}
 		}
 
-		[DllImport (GtkInterop.LIBGTK, CallingConvention=CallingConvention.Cdecl)]
+		[DllImport (GtkInterop.LIBGTK, CallingConvention = CallingConvention.Cdecl)]
 		static extern void gtk_label_set_attributes (IntPtr label, IntPtr attrList);
 
 		public Xwt.Drawing.Color TextColor {
@@ -239,19 +242,19 @@ namespace Xwt.GtkBackend
 		protected void SetAlignment ()
 		{
 			switch (alignment) {
-				case Alignment.Start:
-					Label.Justify = Gtk.Justification.Left;
-					break;
-				case Alignment.End:
-					Label.Justify = Gtk.Justification.Right;
-					break;
-				case Alignment.Center:
-					Label.Justify = Gtk.Justification.Center;
-					break;
+			case Alignment.Start:
+				Label.Justify = Gtk.Justification.Left;
+				break;
+			case Alignment.End:
+				Label.Justify = Gtk.Justification.Right;
+				break;
+			case Alignment.Center:
+				Label.Justify = Gtk.Justification.Center;
+				break;
 			}
 			SetAlignmentGtk ();
 		}
-		
+
 		public EllipsizeMode Ellipsize {
 			get {
 				return Label.Ellipsize.ToXwtValue ();
@@ -280,7 +283,7 @@ namespace Xwt.GtkBackend
 			}
 			set {
 				ToggleSizeCheckEventsForWrap (value);
-				if (value == WrapMode.None){
+				if (value == WrapMode.None) {
 					if (Label.LineWrap) {
 						Label.LineWrap = false;
 					}
