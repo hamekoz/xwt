@@ -37,11 +37,11 @@ namespace Xwt.GtkBackend
 		Gtk.TextTagTable table;
 		static readonly Gdk.Color defaultLinkColor = Colors.Blue.ToGtkValue ();
 
-		int ParagraphSpacing {
+		double ParagraphSpacing {
 			get {
 				var font = Font as Pango.FontDescription;
 				var size = font.SizeIsAbsolute ? font.Size : font.Size / Pango.Scale.PangoScale;
-				return (int)size / 4; // default to 1/4 of the font size
+				return size / 2; // default to 1/2 of the font/line size
 			}
 		}
 
@@ -90,9 +90,7 @@ namespace Xwt.GtkBackend
 				WrapMode = Gtk.WrapMode.None
 			});
 			table.Add (new Gtk.TextTag ("p") {
-				Size = 1,
-				PixelsAboveLines = Math.Max (LineSpacing, ParagraphSpacing),
-				PixelsBelowLines = Math.Max (LineSpacing, ParagraphSpacing),
+				SizePoints = Math.Max (LineSpacing, ParagraphSpacing),
 			});
 		}
 
@@ -176,7 +174,7 @@ namespace Xwt.GtkBackend
 				Widget.PixelsInsideWrap = value;
 				Widget.PixelsBelowLines = value;
 				var tag = table.Lookup ("p");
-				tag.PixelsBelowLines = tag.PixelsAboveLines = Math.Max (value, ParagraphSpacing);
+				tag.SizePoints = Math.Max (value, ParagraphSpacing);
 			}
 		}
 
@@ -187,7 +185,7 @@ namespace Xwt.GtkBackend
 			set {
 				base.Font = value;
 				var tag = table.Lookup ("p");
-				tag.PixelsBelowLines = tag.PixelsAboveLines = Math.Max (LineSpacing, ParagraphSpacing);
+				tag.SizePoints = Math.Max (LineSpacing, ParagraphSpacing);
 			}
 		}
 
@@ -508,14 +506,14 @@ namespace Xwt.GtkBackend
 
 				if (selectable)
 					return base.OnMotionNotifyEvent (evnt);
-				return true;
+				return false;
 			}
 
 			protected override bool OnButtonPressEvent (Gdk.EventButton evnt)
 			{
 				if (selectable)
 					return base.OnButtonPressEvent (evnt);
-				return true;
+				return false;
 			}
 
 			protected override bool OnButtonReleaseEvent (Gdk.EventButton evnt)
@@ -528,7 +526,7 @@ namespace Xwt.GtkBackend
 				}
 				if (selectable)
 					return base.OnButtonReleaseEvent (evnt);
-				return true;
+				return false;
 			}
 
 			Link GetLinkAtPos (double mousex, double mousey)
