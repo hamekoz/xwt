@@ -127,6 +127,8 @@ namespace Xwt.Mac
 			}
 			set {
 				Widget.Editable = !value;
+				if (value)
+					Widget.AbortEditing ();
 			}
 		}
 
