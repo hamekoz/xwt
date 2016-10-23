@@ -37,29 +37,24 @@ namespace Xwt.WPFBackend
 	{
 		public DatePickerBackend()
 		{
-			Widget = new WindowsDatePicker();			
+			Widget = new WindowsDatePicker();
 		}
 
-		protected WindowsDatePicker DatePicker
-		{
+		protected WindowsDatePicker DatePicker {
 			get { return (WindowsDatePicker)Widget; }
 		}
 
-		protected new IDatePickerEventSink EventSink
-		{
+		protected new IDatePickerEventSink EventSink {
 			get { return (IDatePickerEventSink)base.EventSink; }
 		}
 
 		public DatePickerStyle Style { get; set; }
-		
-		public DateTime DateTime
-		{
-			get
-			{
+
+		public DateTime DateTime {
+			get {
 				return DatePicker.SelectedDate ?? new DateTime(0);
 			}
-			set
-			{
+			set {
 				DatePicker.SelectedDate = value;
 			}
 		}
@@ -86,11 +81,30 @@ namespace Xwt.WPFBackend
 			}
 		}
 
+		public bool ReadOnly {
+			get {
+				throw new NotImplementedException();
+			}
+
+			set {
+				throw new NotImplementedException();
+			}
+		}
+
+		public bool WithCalendarButton {
+			get {
+				throw new NotImplementedException();
+			}
+
+			set {
+				throw new NotImplementedException();
+			}
+		}
+
 		public override void EnableEvent(object eventId)
 		{
 			base.EnableEvent(eventId);
-			if (eventId is DatePickerEvent)
-			{
+			if (eventId is DatePickerEvent) {
 				if ((DatePickerEvent)eventId == DatePickerEvent.ValueChanged)
 					DatePicker.SelectedDateChanged += HandleValueChanged;
 			}
@@ -99,8 +113,7 @@ namespace Xwt.WPFBackend
 		public override void DisableEvent(object eventId)
 		{
 			base.DisableEvent(eventId);
-			if (eventId is DatePickerEvent)
-			{
+			if (eventId is DatePickerEvent) {
 				if ((DatePickerEvent)eventId == DatePickerEvent.ValueChanged)
 					DatePicker.SelectedDateChanged -= HandleValueChanged;
 			}
@@ -108,10 +121,9 @@ namespace Xwt.WPFBackend
 
 		void HandleValueChanged(object sender, EventArgs e)
 		{
-			Context.InvokeUserCode(delegate
-			{
+			Context.InvokeUserCode(delegate {
 				EventSink.ValueChanged();
 			});
-		}		
+		}
 	}
 }
