@@ -86,6 +86,26 @@ namespace Xwt.WPFBackend
 			}
 		}
 
+		public bool ReadOnly {
+			get {
+				return !DatePicker.IsEnabled;
+			}
+
+			set {
+				DatePicker.IsEnabled = !value;
+			}
+		}
+
+		public bool WithCalendarButton {
+			get {
+				return DatePicker.IsDropDownOpen;
+			}
+
+			set {
+				DatePicker.IsDropDownOpen = value;
+			}
+		}
+
 		public override void EnableEvent(object eventId)
 		{
 			base.EnableEvent(eventId);

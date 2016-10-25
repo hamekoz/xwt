@@ -166,6 +166,8 @@ namespace Xwt
 			get { return Backend.HasCompletions; }
 		}
 
+		public static object TextAlignmentProperty { get; set; }
+
 		public void SetCompletions (string[] completions)
 		{
 			Backend.SetCompletions (completions);
