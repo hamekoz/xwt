@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Xwt.Backends;
+using Mono.Unix;
 
 
 namespace Xwt.GtkBackend
@@ -611,18 +612,18 @@ namespace Xwt.GtkBackend
 					case DatePickerStyle.Date:
 						datetimeBox.Clear ();
 						datetimeBox.PackStart (calendar);
-						nowButton.Label = "Today";
+						nowButton.Label = Catalog.GetString ("Today");
 						break;
 					case DatePickerStyle.DateTime:
 						datetimeBox.Clear ();
 						datetimeBox.PackStart (calendar);
 						datetimeBox.PackStart (timeBox);
-						nowButton.Label = "Today and Now";
+						nowButton.Label = Catalog.GetString ("Today and Now");
 						break;
 					case DatePickerStyle.Time:
 						datetimeBox.Clear ();
 						datetimeBox.PackStart (timeBox);
-						nowButton.Label = "Now";
+						nowButton.Label = Catalog.GetString ("Now");
 						break;
 					}
 					datetimeBox.PackStart (nowButton);
