@@ -128,12 +128,13 @@ namespace Xwt.Mac
 
 		public bool Visible {
 			get {
-				return !ContentView.Hidden;
+				return IsVisible;
 			}
 			set {
 				if (value)
-					MacEngine.App.ShowWindow (this);
-				ContentView.Hidden = !value;
+					MacEngine.App.ShowWindow(this);
+				ContentView.Hidden = !value; // handle shown/hidden events
+				IsVisible = value;
 			}
 		}
 
@@ -289,7 +290,10 @@ namespace Xwt.Mac
 		bool IWindowFrameBackend.Close ()
 		{
 			closePerformed = true;
-			PerformClose (this);
+			if ((StyleMask & NSWindowStyle.Titled) != 0 && (StyleMask & NSWindowStyle.Closable) != 0)
+				PerformClose(this);
+			else
+				Close ();
 			return closePerformed;
 		}
 		
@@ -511,6 +515,9 @@ namespace Xwt.Mac
 				this.disposing = true;
 				try
 				{
+					if (VisibilityEventsEnabled() && ContentView != null)
+						ContentView.RemoveObserver(this, HiddenProperty);
+					
 					// HACK: Xamarin.Mac/MonoMac limitation: no direct way to release a window manually
 					// A NSWindow instance will be removed from NSApplication.SharedApplication.Windows
 					// only if it is being closed with ReleasedWhenClosed set to true but not on Dispose
