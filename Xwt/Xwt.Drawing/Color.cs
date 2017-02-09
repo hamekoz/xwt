@@ -27,7 +27,6 @@
 using System;
 using System.ComponentModel;
 using System.Windows.Markup;
-using Mono.Unix;
 
 namespace Xwt.Drawing
 {
@@ -183,7 +182,7 @@ namespace Xwt.Drawing
 		public Color BlendWith (Color target, double amount)
 		{
 			if (amount < 0 || amount > 1)
-				throw new ArgumentException (Catalog.GetString ("Blend amount must be between 0 and 1"));
+				throw new ArgumentException (Application.TranslationCatalog.GetString ("Blend amount must be between 0 and 1"));
 			return new Color (BlendValue (r, target.r, amount), BlendValue (g, target.g, amount), BlendValue (b, target.b, amount), target.Alpha);
 		}
 		
@@ -360,7 +359,7 @@ namespace Xwt.Drawing
 			if (Color.TryParse (value, out c))
 				return c;
 			else
-				throw new InvalidOperationException (Catalog.GetString (string.Format ("Could not parse color value: {0}", value)));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString (string.Format ("Could not parse color value: {0}", value)));
 		}
 	}
 }

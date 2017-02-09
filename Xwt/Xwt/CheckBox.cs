@@ -27,7 +27,6 @@ using System;
 using System.ComponentModel;
 using Xwt.Backends;
 using System.Windows.Markup;
-using Mono.Unix;
 
 namespace Xwt
 {
@@ -112,7 +111,7 @@ namespace Xwt
 			get { return Backend.State; }
 			set {
 				if (!value.IsValid ())
-					throw new ArgumentOutOfRangeException (Catalog.GetString ("Invalid check box state value"));
+					throw new ArgumentOutOfRangeException (Application.TranslationCatalog.GetString ("Invalid check box state value"));
 				Backend.State = value;
 			}
 		}

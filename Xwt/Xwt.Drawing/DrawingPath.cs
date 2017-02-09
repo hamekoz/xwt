@@ -25,7 +25,6 @@
 // THE SOFTWARE.
 using System;
 using Xwt.Backends;
-using Mono.Unix;
 
 namespace Xwt.Drawing
 {
@@ -108,7 +107,7 @@ namespace Xwt.Drawing
 		public void Arc (double xc, double yc, double radius, double angle1, double angle2)
 		{
 			if (radius <= 0)
-				throw new ArgumentException (Catalog.GetString ("Radius must be greater than zero"));
+				throw new ArgumentException (Application.TranslationCatalog.GetString ("Radius must be greater than zero"));
 			handler.Arc (Backend, xc, yc, radius, angle1, angle2);
 		}
 
@@ -363,7 +362,7 @@ namespace Xwt.Drawing
 		public void AppendPath (DrawingPath p)
 		{
 			if (p is Context)
-				throw new NotSupportedException (Catalog.GetString ("Can't directly append a Context object to a path"));
+				throw new NotSupportedException (Application.TranslationCatalog.GetString ("Can't directly append a Context object to a path"));
 			if (!(handler is VectorImageRecorderContextHandler) && (p.Backend is VectorBackend)) {
 				var c = (VectorBackend)p.Backend;
 				ToolkitEngine.VectorImageRecorderContextHandler.Draw (handler, Backend, c.ToVectorImageData ());

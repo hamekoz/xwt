@@ -29,7 +29,6 @@ using Xwt.Backends;
 using System.Xml;
 using System.Xaml;
 using Xwt.Drawing;
-using Mono.Unix;
 
 namespace Xwt.Design
 {
@@ -49,7 +48,7 @@ namespace Xwt.Design
 		{
 			object o = XamlServices.Load (r);
 			if (!(o is Widget))
-				throw new InvalidOperationException (Catalog.GetString (string.Format ("Invalid object type. Expected Xwt.Widget, found: {0}", o.GetType ())));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString (string.Format ("Invalid object type. Expected Xwt.Widget, found: {0}", o.GetType ())));
 			widget = (Widget)o;
 			Backend.Load (widget);
 		}

@@ -38,7 +38,6 @@
 // 
 using System;
 using System.Globalization;
-using Mono.Unix;
 
 namespace Xwt.Drawing
 {
@@ -134,7 +133,7 @@ namespace Xwt.Drawing
 		public void Invert ()
 		{
 			if (!HasInverse)
-				throw new InvalidOperationException (Catalog.GetString ("Transform is not invertible."));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString ("Transform is not invertible."));
 
 			var d = Determinant;
 

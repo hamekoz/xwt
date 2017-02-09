@@ -28,7 +28,6 @@ using System;
 using Xwt.Drawing;
 
 using Xwt.Backends;
-using Mono.Unix;
 
 namespace Xwt
 {
@@ -90,7 +89,7 @@ namespace Xwt
 			get { return content; }
 			set {
 				if (shown)
-					throw new InvalidOperationException (Catalog.GetString ("The content widget can't be changed while the popover is visible"));
+					throw new InvalidOperationException (Application.TranslationCatalog.GetString ("The content widget can't be changed while the popover is visible"));
 				content = value;
 			}
 		}

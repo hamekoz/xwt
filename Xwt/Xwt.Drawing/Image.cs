@@ -31,7 +31,6 @@ using Xwt.Backends;
 using System.Reflection;
 using System.IO;
 using System.Collections.Generic;
-using Mono.Unix;
 
 namespace Xwt.Drawing
 {
@@ -534,7 +533,7 @@ namespace Xwt.Drawing
 		{
 			var size = Size;
 			if (size.IsZero)
-				throw new InvalidOperationException (Catalog.GetString ("Image size has not been set and the image doesn't have a default size"));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString ("Image size has not been set and the image doesn't have a default size"));
 			return size;
 		}
 
@@ -614,7 +613,7 @@ namespace Xwt.Drawing
 		public Image Scale (double scale)
 		{
 			if (!HasFixedSize)
-				throw new InvalidOperationException (Catalog.GetString ("Image must have a size in order to be scaled"));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString ("Image must have a size in order to be scaled"));
 			
 			double w = Size.Width * scale;
 			double h = Size.Height * scale;
@@ -636,7 +635,7 @@ namespace Xwt.Drawing
 		public Image Scale (double scaleX, double scaleY)
 		{
 			if (!HasFixedSize)
-				throw new InvalidOperationException (Catalog.GetString ("Image must have a size in order to be scaled"));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString ("Image must have a size in order to be scaled"));
 
 			double w = Size.Width * scaleX;
 			double h = Size.Height * scaleY;
@@ -664,7 +663,7 @@ namespace Xwt.Drawing
 		public BitmapImage ToBitmap (Widget renderTarget, ImageFormat format = ImageFormat.ARGB32)
 		{
 			if (renderTarget.ParentWindow == null)
-				throw new InvalidOperationException (Catalog.GetString ("renderTarget is not bound to a window"));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString ("renderTarget is not bound to a window"));
 			return ToBitmap (renderTarget.ParentWindow.Screen.ScaleFactor, format);
 		}
 
@@ -1008,7 +1007,7 @@ namespace Xwt.Drawing
 		{
 			var img = toolkit.ImageBackendHandler.LoadFromResource (assembly, fileName);
 			if (img == null)
-				throw new InvalidOperationException (Catalog.GetString (string.Format ("Resource not found: {0}", fileName)));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString (string.Format ("Resource not found: {0}", fileName)));
 			return img;
 		}
 
@@ -1042,7 +1041,7 @@ namespace Xwt.Drawing
 		{
 			var img = toolkit.ImageBackendHandler.LoadFromFile (fileName);
 			if (img == null)
-				throw new InvalidOperationException (Catalog.GetString (string.Format ("File not found: {0}", fileName)));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString (string.Format ("File not found: {0}", fileName)));
 			return img;
 		}
 

@@ -31,7 +31,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Xwt.Backends;
-using Mono.Unix;
 
 namespace Xwt
 {
@@ -75,7 +74,7 @@ namespace Xwt
 			}
 			set {
 				if (!value.IsValid ()) {
-					throw new ArgumentOutOfRangeException (Catalog.GetString ("Invalid checkbox state"));
+					throw new ArgumentOutOfRangeException (Application.TranslationCatalog.GetString ("Invalid checkbox state"));
 				}
 				state = value;
 			}

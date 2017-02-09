@@ -27,7 +27,6 @@
 using System;
 
 using Xwt.Backends;
-using Mono.Unix;
 
 namespace Xwt
 {
@@ -98,7 +97,7 @@ namespace Xwt
 			if (backend == null) {
 				backend = OnCreateBackend ();
 				if (backend == null)
-					throw new InvalidOperationException (Catalog.GetString (string.Format ("No backend found for widget: {0}", GetType ())));
+					throw new InvalidOperationException (Application.TranslationCatalog.GetString (string.Format ("No backend found for widget: {0}", GetType ())));
 				OnBackendCreated ();
 			}
 		}

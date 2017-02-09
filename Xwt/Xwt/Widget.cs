@@ -36,7 +36,6 @@ using System.Reflection;
 using System.Xaml;
 using System.Linq;
 using Xwt.Motion;
-using Mono.Unix;
 
 namespace Xwt
 {
@@ -252,7 +251,7 @@ namespace Xwt
 		public Widget ()
 		{
 			if (!(base.BackendHost is WidgetBackendHost))
-				throw new InvalidOperationException (Catalog.GetString ("CreateBackendHost for Widget did not return a WidgetBackendHost instance"));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString ("CreateBackendHost for Widget did not return a WidgetBackendHost instance"));
 		}
 		
 		static Widget ()
@@ -662,7 +661,7 @@ namespace Xwt
 			get { return minWidth; }
 			set {
 				if (value < -1)
-					throw new ArgumentException (Catalog.GetString ("MinWidth can't be less that -1"));
+					throw new ArgumentException (Application.TranslationCatalog.GetString ("MinWidth can't be less that -1"));
 				minWidth = value;
 				Backend.SetMinSize (minWidth >= 0 ? minWidth : -1, minHeight >= 0 ? minHeight : -1);
 				OnPreferredSizeChanged ();
@@ -683,7 +682,7 @@ namespace Xwt
 			get { return minHeight; }
 			set {
 				if (value < -1)
-					throw new ArgumentException (Catalog.GetString ("MinHeight can't be less that -1"));
+					throw new ArgumentException (Application.TranslationCatalog.GetString ("MinHeight can't be less that -1"));
 				minHeight = value;
 				Backend.SetMinSize (minWidth >= 0 ? minWidth : -1, minHeight >= 0 ? minHeight : -1);
 				OnPreferredSizeChanged ();
@@ -704,7 +703,7 @@ namespace Xwt
 			get { return widthRequest; }
 			set {
 				if (value < -1)
-					throw new ArgumentException (Catalog.GetString ("NaturalWidth can't be less that -1"));
+					throw new ArgumentException (Application.TranslationCatalog.GetString ("NaturalWidth can't be less that -1"));
 				widthRequest = value;
 				Backend.SetSizeRequest (widthRequest >= 0 ? widthRequest : -1, heightRequest >= 0 ? heightRequest : -1);
 				OnPreferredSizeChanged ();
@@ -725,7 +724,7 @@ namespace Xwt
 			get { return heightRequest; }
 			set {
 				if (value < -1)
-					throw new ArgumentException (Catalog.GetString ("NaturalHeight can't be less that -1"));
+					throw new ArgumentException (Application.TranslationCatalog.GetString ("NaturalHeight can't be less that -1"));
 				heightRequest = value;
 				Backend.SetSizeRequest (widthRequest >= 0 ? widthRequest : -1, heightRequest >= 0 ? heightRequest : -1);
 				OnPreferredSizeChanged ();
@@ -1740,21 +1739,21 @@ namespace Xwt
 				return;
 
 			if (w.Surface.ToolkitEngine != Surface.ToolkitEngine)
-				throw new InvalidOperationException (Catalog.GetString ("Widget belongs to a different toolkit"));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString ("Widget belongs to a different toolkit"));
 
 			var wback = w.Backend as XwtWidgetBackend;
 
 			if (IsInternalChild && !w.IsInternalChild) {
 				if (w.Parent == null)
-					throw new InvalidOperationException (Catalog.GetString (string.Format ("Widget must be registered as a child widget of {0}", FindExternalParent ())));
+					throw new InvalidOperationException (Application.TranslationCatalog.GetString (string.Format ("Widget must be registered as a child widget of {0}", FindExternalParent ())));
 				if (w.Parent != ExternalParent)
-					throw new InvalidOperationException (Catalog.GetString (string.Format ("Widget is already a child of a widget of type {0}", w.Parent.GetType ())));
+					throw new InvalidOperationException (Application.TranslationCatalog.GetString (string.Format ("Widget is already a child of a widget of type {0}", w.Parent.GetType ())));
 				w.InternalParent = this;
 				if (wback != null)
 					wback.InternalParent = this;
 			} else {
 				if (w.Parent != null)
-					throw new InvalidOperationException (Catalog.GetString (string.Format ("Widget is already a child of a widget of type {0}", w.Parent.GetType ())));
+					throw new InvalidOperationException (Application.TranslationCatalog.GetString (string.Format ("Widget is already a child of a widget of type {0}", w.Parent.GetType ())));
 				w.Parent = this;
 				w.InternalParent = this;
 				if (wback != null) {
@@ -1782,13 +1781,13 @@ namespace Xwt
 
 			int i;
 			if (children == null || (i = children.IndexOf (w)) == -1)
-				throw new InvalidOperationException (Catalog.GetString ("Widget is not a child of this widget"));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString ("Widget is not a child of this widget"));
 
 			var wback = w.Backend as XwtWidgetBackend;
 
 			if (w.Parent == this) {
 				if (w.InternalParent != this)
-					throw new InvalidOperationException (Catalog.GetString ("Child widget must be removed from internal container before unregistering it"));
+					throw new InvalidOperationException (Application.TranslationCatalog.GetString ("Child widget must be removed from internal container before unregistering it"));
 				w.Parent = null;
 				w.InternalParent = null;
 			} else {
@@ -1817,9 +1816,9 @@ namespace Xwt
 			if (child.ExternalParent == this)
 				return child;
 			if (child.ExternalParent != null)
-				throw new InvalidOperationException (Catalog.GetString (string.Format ("Widget is already an internal child of widget {0}", child.ExternalParent)));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString (string.Format ("Widget is already an internal child of widget {0}", child.ExternalParent)));
 			if (child.Parent != null)
-				throw new InvalidOperationException (Catalog.GetString ("Widget must be flagged as internal child before being added to a container"));
+				throw new InvalidOperationException (Application.TranslationCatalog.GetString ("Widget must be flagged as internal child before being added to a container"));
 			child.ExternalParent = this;
 			return child;
 		}

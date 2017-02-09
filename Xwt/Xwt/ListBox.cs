@@ -26,7 +26,6 @@
 using System;
 using Xwt.Backends;
 using System.ComponentModel;
-using Mono.Unix;
 
 
 namespace Xwt
@@ -107,7 +106,7 @@ namespace Xwt
 					views.Add (new TextCellView (itemCollection.LabelField));
 				} else {
 					if (DataSource != itemCollection.DataSource)
-						throw new InvalidOperationException (Catalog.GetString ("The Items collection can't be used when a custom DataSource is set"));
+						throw new InvalidOperationException (Application.TranslationCatalog.GetString ("The Items collection can't be used when a custom DataSource is set"));
 				}
 				return itemCollection;
 			}

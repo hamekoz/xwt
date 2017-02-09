@@ -31,7 +31,6 @@ using System.ComponentModel;
 
 using Xwt.Backends;
 using System.Windows.Markup;
-using Mono.Unix;
 
 namespace Xwt
 {
@@ -437,7 +436,7 @@ namespace Xwt
 			}
 			set {
 				if (value < 0)
-					throw new ArgumentException (Catalog.GetString ("Position can't be negative"));
+					throw new ArgumentException (Application.TranslationCatalog.GetString ("Position can't be negative"));
 				position = value;
 				parent.ChildChanged (this, "Position");
 			}

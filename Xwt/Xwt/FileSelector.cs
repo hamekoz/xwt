@@ -25,7 +25,6 @@
 // THE SOFTWARE.
 using System;
 using Xwt.Backends;
-using Mono.Unix;
 
 namespace Xwt
 {
@@ -189,7 +188,7 @@ namespace Xwt
 			}
 			set {
 				if (!filters.Contains (value))
-					throw new ArgumentException (Catalog.GetString ("The active filter must be one of the filters included in the Filters collection"));
+					throw new ArgumentException (Application.TranslationCatalog.GetString ("The active filter must be one of the filters included in the Filters collection"));
 				if (dialog != null)
 					dialog.ActiveFilter = value;
 				else
