@@ -1,10 +1,10 @@
-//
-// DrawingImage.cs
+﻿//
+// ITranslationCatalog.cs
 //
 // Author:
-//       Lluis Sanchez <lluis@xamarin.com>
+//       Vsevolod Kukol <sevoku@microsoft.com>
 //
-// Copyright (c) 2013 Xamarin Inc.
+// Copyright (c) 2016 (c) Microsoft Corporation
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,39 +24,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-using Xwt.Backends;
-
-namespace Xwt.Drawing
+namespace Xwt
 {
-	public class DrawingImage: Image
+	public interface ITranslationCatalog
 	{
-		public DrawingImage ()
+		string GetString(string str);
+		string GetPluralString(string singular, string plural, int number);
+	}
+
+	class DefaultTranslationCatalog : ITranslationCatalog
+	{
+		public string GetString(string str)
 		{
-			Backend = Toolkit.CurrentEngine.ImageBackendHandler.CreateCustomDrawn (Draw);
-			Init ();
-			NativeRef.SetCustomDrawSource (Draw);
+			return str;
 		}
 
-		void Draw (object ctx, Rectangle bounds, ImageDescription idesc, Toolkit toolkit)
+		public string GetPluralString(string singular, string plural, int number)
 		{
-			var c = new Context (ctx, toolkit);
-			c.Reset (null);
-			c.Save ();
-			if (idesc.Styles != StyleSet.Empty)
-				c.SetStyles (idesc.Styles);
-			c.GlobalAlpha = idesc.Alpha;
-			OnDraw (c, bounds);
-			c.Restore ();
-		}
-
-		protected virtual void OnDraw (Context ctx, Rectangle bounds)
-		{
-		}
-
-		protected override Size GetDefaultSize ()
-		{
-			return Size.Zero;
+			return number == 1 ? singular : plural;
 		}
 	}
 }
-

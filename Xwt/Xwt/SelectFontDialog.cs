@@ -26,15 +26,14 @@
 using Xwt.Drawing;
 using Xwt.Backends;
 using System;
-using Mono.Unix;
 
 namespace Xwt
 {
 	public sealed class SelectFontDialog
 	{
 		Font font = Font.SystemFont;
-		string title = Catalog.GetString ("Select a font");
-		string previewText = Catalog.GetString ("The quick brown fox jumps over the lazy dog.");
+		string title = Application.TranslationCatalog.GetString("Select a font");
+		string previewText = Application.TranslationCatalog.GetString("The quick brown fox jumps over the lazy dog.");
 
 		public SelectFontDialog ()
 		{

@@ -24,7 +24,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-using Mono.Unix;
 using Xwt.Drawing;
 
 namespace Xwt
@@ -58,22 +57,22 @@ namespace Xwt
 		
 		public bool IsStockButton { get; private set; }
 		
-		public static Command Ok = new Command (Catalog.GetString ("Ok"));
-		public static Command Cancel = new Command (Catalog.GetString ("Cancel"));
-		public static Command Yes = new Command (Catalog.GetString ("Yes"));
-		public static Command No = new Command (Catalog.GetString ("No"));
-		public static Command Close = new Command (Catalog.GetString ("Close"));
-		public static Command Delete = new Command (Catalog.GetString ("Delete"));
-		public static Command Add = new Command (Catalog.GetString ("Add"));
-		public static Command Remove = new Command (Catalog.GetString ("Remove"));
-		public static Command Clear = new Command (Catalog.GetString ("Clear"));
-		public static Command Copy = new Command (Catalog.GetString ("Copy"));
-		public static Command Cut = new Command (Catalog.GetString ("Cut"));
-		public static Command Paste = new Command (Catalog.GetString ("Paste"));
-		public static Command Save = new Command (Catalog.GetString ("Save"));
-		public static Command SaveAs = new Command (Catalog.GetString ("SaveAs"));
-		public static Command Stop = new Command (Catalog.GetString ("Stop"));
-		public static Command Apply = new Command (Catalog.GetString ("Apply"));
+		public static Command Ok = new Command ("Ok", Application.TranslationCatalog.GetString("Ok"));
+		public static Command Cancel = new Command ("Cancel", Application.TranslationCatalog.GetString("Cancel"));
+		public static Command Yes = new Command ("Yes", Application.TranslationCatalog.GetString("Yes"));
+		public static Command No = new Command ("No", Application.TranslationCatalog.GetString("No"));
+		public static Command Close = new Command ("Close", Application.TranslationCatalog.GetString("Close"));
+		public static Command Delete = new Command ("Delete", Application.TranslationCatalog.GetString("Delete"));
+		public static Command Add = new Command ("Add", Application.TranslationCatalog.GetString("Add"));
+		public static Command Remove = new Command ("Remove", Application.TranslationCatalog.GetString("Remove"));
+		public static Command Clear = new Command ("Clear", Application.TranslationCatalog.GetString("Clear"));
+		public static Command Copy = new Command ("Copy", Application.TranslationCatalog.GetString("Copy"));
+		public static Command Cut = new Command ("Cut", Application.TranslationCatalog.GetString("Cut"));
+		public static Command Paste = new Command ("Paste", Application.TranslationCatalog.GetString("Paste"));
+		public static Command Save = new Command ("Save", Application.TranslationCatalog.GetString("Save"));
+		public static Command SaveAs = new Command ("SaveAs", Application.TranslationCatalog.GetString("Save As"));
+		public static Command Stop = new Command ("Stop", Application.TranslationCatalog.GetString("Stop"));
+		public static Command Apply = new Command ("Apply", Application.TranslationCatalog.GetString("Apply"));
 
 		public override string ToString ()
 		{
