@@ -29,7 +29,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Gtk;
 using Xwt.Backends;
-
 #if XWT_GTK3
 using TreeModel = Gtk.ITreeModel;
 #endif
@@ -61,13 +60,17 @@ namespace Xwt.GtkBackend
 
 			if (view is ITextCellViewFrontend) {
 				crd = new CustomCellRendererText ();
-			} else if (view is ICheckBoxCellViewFrontend) {
+			}
+			else if (view is ICheckBoxCellViewFrontend) {
 				crd = new CustomCellRendererToggle ();
-			} else if (view is IImageCellViewFrontend) {
+			}
+			else if (view is IImageCellViewFrontend) {
 				crd = new CustomCellRendererImage ();
-			} else if (view is ICanvasCellViewFrontend) {
+			}
+			else if (view is ICanvasCellViewFrontend) {
 				crd = new CustomCellRenderer ();
-			} else if (view is IComboBoxCellViewFrontend) {
+			}
+			else if (view is IComboBoxCellViewFrontend) {
 				crd = new CustomCellRendererComboBox ();
 			} else
 				throw new NotSupportedException ("Unknown cell view type: " + view.GetType ());
@@ -78,7 +81,7 @@ namespace Xwt.GtkBackend
 			view.AttachBackend (widget, crd);
 			return crd;
 		}
-
+		
 		public static Gtk.Widget CreateCellRenderer (ApplicationContext actx, ICollection<CellView> views)
 		{
 			if (views.Count == 1) {
@@ -87,10 +90,11 @@ namespace Xwt.GtkBackend
 					box.PackStart (CreateCellRenderer (actx, v), false, false, 0);
 				box.ShowAll ();
 				return box;
-			} else
+			}
+			else
 				return CreateCellRenderer (actx, views.First ());
 		}
-
+		
 		public static Gtk.Widget CreateCellRenderer (ApplicationContext actx, CellView view)
 		{
 			if (view is TextCellView) {
@@ -141,33 +145,21 @@ namespace Xwt.GtkBackend
 		}
 
 	}
-
+	
 	public interface ICellRendererTarget
 	{
 		void PackStart (object target, Gtk.CellRenderer cr, bool expand);
-
 		void PackEnd (object target, Gtk.CellRenderer cr, bool expand);
-
 		void AddAttribute (object target, Gtk.CellRenderer cr, string field, int column);
-
 		void SetCellDataFunc (object target, Gtk.CellRenderer cr, Gtk.CellLayoutDataFunc dataFunc);
-
 		Rectangle GetCellBounds (object target, Gtk.CellRenderer cr, Gtk.TreeIter iter);
-
 		Rectangle GetCellBackgroundBounds (object target, Gtk.CellRenderer cr, Gtk.TreeIter iter);
-
 		void SetCurrentEventRow (string path);
-
 		Gtk.Widget EventRootWidget { get; }
-
 		bool GetCellPosition (Gtk.CellRenderer r, int ex, int ey, out int cx, out int cy, out Gtk.TreeIter iter);
-
 		void QueueDraw (object target, Gtk.TreeIter iter);
-
 		TreeModel Model { get; }
-
 		Gtk.TreeIter PressedIter { get; set; }
-
 		CellViewBackend PressedCell { get; set; }
 	}
 

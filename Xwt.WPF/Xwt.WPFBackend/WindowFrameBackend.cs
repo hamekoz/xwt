@@ -222,7 +222,7 @@ namespace Xwt.WPFBackend
 		{
 			window.Activate ();
 		}
-
+		
 		bool lastFullScreenDecoratedState;
 		public Xwt.WindowState WindowState {
 			get {

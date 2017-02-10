@@ -161,7 +161,7 @@ namespace Xwt.Mac
 				return IsKeyWindow;
 			}
 		}
-		
+
 		public WindowState WindowState {
 			get {
 				if (MacSystemInformation.OsVersion < MacSystemInformation.Lion)

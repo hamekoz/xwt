@@ -88,7 +88,7 @@ namespace Xwt.Backends
 		/// This method doesn't dispose the window. The Dispose method has to be called.
 		/// </remarks>
 		bool Close ();
-		
+
 		/// <summary>
 		/// Gets or sets the state of the window (iconified, normal or full screen).
 		/// </summary>

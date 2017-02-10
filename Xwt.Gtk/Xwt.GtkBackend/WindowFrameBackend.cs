@@ -116,16 +116,16 @@ namespace Xwt.GtkBackend
 			};
 			#endif
 		}
-
+		
 		public virtual void Initialize ()
 		{
 		}
-
+		
 		public virtual void Dispose ()
 		{
 			Window.Destroy ();
 		}
-
+		
 		public IWindowFrameEventSink EventSink {
 			get { return eventSink; }
 		}

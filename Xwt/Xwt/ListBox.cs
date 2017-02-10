@@ -40,30 +40,30 @@ namespace Xwt
 		IListDataSource source;
 		ItemCollection itemCollection;
 		SelectionMode mode;
-
+		
 		protected new class WidgetBackendHost: Widget.WidgetBackendHost, IListBoxEventSink, ICellContainer
 		{
 			public void NotifyCellChanged ()
 			{
 				((ListBox)Parent).OnCellChanged ();
 			}
-
+			
 			public void OnSelectionChanged ()
 			{
 				((ListBox)Parent).OnSelectionChanged (EventArgs.Empty);
 			}
-
+			
 			public void OnRowActivated (int rowIndex)
 			{
 				((ListBox)Parent).OnRowActivated (new ListViewRowEventArgs (rowIndex));
 			}
-
+			
 			public override Size GetDefaultNaturalSize ()
 			{
 				return Xwt.Backends.DefaultNaturalSizes.ComboBox;
 			}
 		}
-
+		
 		static ListBox ()
 		{
 			MapEvent (TableViewEvent.SelectionChanged, typeof(ListView), "OnSelectionChanged");
@@ -71,19 +71,19 @@ namespace Xwt
 		}
 
 		IListBoxBackend Backend {
-			get { return (IListBoxBackend)BackendHost.Backend; }
+			get { return (IListBoxBackend) BackendHost.Backend; }
 		}
-
+		
 		public ListBox ()
 		{
 			views = new CellViewCollection ((ICellContainer)BackendHost);
 		}
-
+		
 		protected override BackendHost CreateBackendHost ()
 		{
 			return new WidgetBackendHost ();
 		}
-
+		
 		/// <summary>
 		/// Views to be used to display the data of the items
 		/// </summary>
@@ -106,7 +106,7 @@ namespace Xwt
 					views.Add (new TextCellView (itemCollection.LabelField));
 				} else {
 					if (DataSource != itemCollection.DataSource)
-						throw new InvalidOperationException (Application.TranslationCatalog.GetString ("The Items collection can't be used when a custom DataSource is set"));
+						throw new InvalidOperationException ("The Items collection can't be used when a custom DataSource is set");
 				}
 				return itemCollection;
 			}
@@ -133,7 +133,7 @@ namespace Xwt
 				}
 				
 				source = value;
-				Backend.SetSource (source, source is IFrontend ? (IBackend)Toolkit.GetBackend (source) : null);
+				Backend.SetSource (source, source is IFrontend ? (IBackend) Toolkit.GetBackend (source) : null);
 
 				if (source != null) {
 					source.RowChanged += HandleModelChanged;
@@ -144,11 +144,12 @@ namespace Xwt
 			}
 		}
 
-		public bool GridLinesVisible {
+		public bool GridLinesVisible
+		{
 			get { return Backend.GridLinesVisible; }
 			set { Backend.GridLinesVisible = value; }
 		}
-
+		
 		/// <summary>
 		/// Gets or sets the vertical scroll policy.
 		/// </summary>
@@ -159,7 +160,7 @@ namespace Xwt
 			get { return Backend.VerticalScrollPolicy; }
 			set { Backend.VerticalScrollPolicy = value; }
 		}
-
+		
 		/// <summary>
 		/// Gets or sets the horizontal scroll policy.
 		/// </summary>
@@ -170,7 +171,7 @@ namespace Xwt
 			get { return Backend.HorizontalScrollPolicy; }
 			set { Backend.HorizontalScrollPolicy = value; }
 		}
-
+		
 		/// <summary>
 		/// Gets or sets the selection mode.
 		/// </summary>
@@ -186,7 +187,7 @@ namespace Xwt
 				Backend.SetSelectionMode (mode);
 			}
 		}
-
+		
 		/// <summary>
 		/// Gets the selected row.
 		/// </summary>
@@ -202,7 +203,7 @@ namespace Xwt
 					return items [0];
 			}
 		}
-
+		
 		public object SelectedItem {
 			get {
 				if (SelectedRow == -1)
@@ -220,7 +221,7 @@ namespace Xwt
 					UnselectAll ();
 			}
 		}
-
+		
 		/// <summary>
 		/// Gets the selected rows.
 		/// </summary>
@@ -246,7 +247,7 @@ namespace Xwt
 				Backend.FocusedRow = value;
 			}
 		}
-
+		
 		/// <summary>
 		/// Selects a row.
 		/// </summary>
@@ -261,7 +262,7 @@ namespace Xwt
 		{
 			Backend.SelectRow (row);
 		}
-
+		
 		/// <summary>
 		/// Unselects a row.
 		/// </summary>
@@ -272,7 +273,7 @@ namespace Xwt
 		{
 			Backend.UnselectRow (row);
 		}
-
+		
 		/// <summary>
 		/// Selects all rows
 		/// </summary>
@@ -280,7 +281,7 @@ namespace Xwt
 		{
 			Backend.SelectAll ();
 		}
-
+		
 		/// <summary>
 		/// Clears the selection
 		/// </summary>
@@ -325,19 +326,19 @@ namespace Xwt
 		{
 			return Backend.GetRowBounds (row, includeMargin);
 		}
-
+		
 		void HandleModelChanged (object sender, ListRowEventArgs e)
 		{
 			OnPreferredSizeChanged ();
 		}
-
+		
 		void OnCellChanged ()
 		{
 			Backend.SetViews (views);
 		}
-
+		
 		EventHandler selectionChanged;
-
+		
 		/// <summary>
 		/// Occurs when selection changes
 		/// </summary>
@@ -351,7 +352,7 @@ namespace Xwt
 				BackendHost.OnAfterEventRemove (TableViewEvent.SelectionChanged, selectionChanged);
 			}
 		}
-
+		
 		/// <summary>
 		/// Raises the selection changed event.
 		/// </summary>
@@ -373,9 +374,9 @@ namespace Xwt
 			if (rowActivated != null)
 				rowActivated (this, a);
 		}
-
+		
 		EventHandler<ListViewRowEventArgs> rowActivated;
-
+		
 		/// <summary>
 		/// Occurs when the user double-clicks on a row
 		/// </summary>

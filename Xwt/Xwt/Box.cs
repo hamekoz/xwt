@@ -40,7 +40,7 @@ namespace Xwt
 		ChildrenCollection<BoxPlacement> children;
 		Orientation direction;
 		double spacing = 6;
-
+		
 		protected new class WidgetBackendHost: Widget.WidgetBackendHost, ICollectionEventSink<BoxPlacement>, IContainerEventSink<BoxPlacement>
 		{
 			public void AddedItem (BoxPlacement item, int index)
@@ -63,22 +63,22 @@ namespace Xwt
 				((Box)Parent).OnReplaceChild (child, oldWidget, newWidget);
 			}
 		}
-
+		
 		protected override BackendHost CreateBackendHost ()
 		{
 			return new WidgetBackendHost ();
 		}
-
+		
 		IBoxBackend Backend {
-			get { return (IBoxBackend)BackendHost.Backend; }
+			get { return (IBoxBackend) BackendHost.Backend; }
 		}
-
+		
 		internal Box (Orientation dir)
 		{
 			children = new ChildrenCollection<BoxPlacement> ((WidgetBackendHost)BackendHost);
 			direction = dir;
 		}
-
+		
 		public double Spacing {
 			get { return spacing; }
 			set {
@@ -86,11 +86,11 @@ namespace Xwt
 				OnPreferredSizeChanged ();
 			}
 		}
-
+		
 		public ChildrenCollection<BoxPlacement> Placements {
 			get { return children; }
 		}
-
+		
 		public IEnumerable<Widget> Children {
 			get { return children.Select (c => c.Child); }
 		}
@@ -101,7 +101,7 @@ namespace Xwt
 				throw new ArgumentNullException ("widget");
 			Pack (widget, false, WidgetPlacement.Fill, PackOrigin.Start);
 		}
-
+		
 		public void PackStart (Widget widget, bool expand)
 		{
 			if (widget == null)
@@ -133,14 +133,14 @@ namespace Xwt
 			bool fill = (mode & BoxMode.Fill) != 0;
 			PackStart (widget, expand, fill);
 		}
-
+		
 		public void PackEnd (Widget widget)
 		{
 			if (widget == null)
 				throw new ArgumentNullException ("widget");
 			Pack (widget, false, WidgetPlacement.Fill, PackOrigin.End);
 		}
-
+		
 		public void PackEnd (Widget widget, bool expand)
 		{
 			if (widget == null)
@@ -219,20 +219,20 @@ namespace Xwt
 			p.PackOrigin = ptype;
 			children.Add (p);
 		}
-
+		
 		public bool Remove (Widget widget)
 		{
 			if (widget == null)
 				throw new ArgumentNullException ("widget");
-			for (int n = 0; n < children.Count; n++) {
-				if (children [n].Child == widget) {
+			for (int n=0; n<children.Count; n++) {
+				if (children[n].Child == widget) {
 					children.RemoveAt (n);
 					return true;
 				}
 			}
 			return false;
 		}
-
+		
 		/// <summary>
 		/// Removes all children
 		/// </summary>
@@ -240,26 +240,26 @@ namespace Xwt
 		{
 			children.Clear ();
 		}
-
+		
 		void OnAdd (Widget child, BoxPlacement placement)
 		{
 			RegisterChild (child);
 			Backend.Add ((IWidgetBackend)GetBackend (child));
 			OnPreferredSizeChanged ();
 		}
-
+		
 		void OnRemove (Widget child)
 		{
 			UnregisterChild (child);
 			Backend.Remove ((IWidgetBackend)GetBackend (child));
 			OnPreferredSizeChanged ();
 		}
-
+		
 		void OnChildChanged (BoxPlacement placement, object hint)
 		{
 			OnPreferredSizeChanged ();
 		}
-
+		
 		internal protected virtual void OnReplaceChild (BoxPlacement placement, Widget oldWidget, Widget newWidget)
 		{
 			if (oldWidget != null)
@@ -286,15 +286,15 @@ namespace Xwt
 				CalcDefaultSizes (size.Width, size.Height, true);
 				double xs = 0;
 				double xe = size.Width + spacing;
-				for (int n = 0; n < visibleChildren.Length; n++) {
+				for (int n=0; n<visibleChildren.Length; n++) {
 					var bp = visibleChildren [n];
 					double availableWidth = bp.NextSize >= 0 ? bp.NextSize : 0;
 					if (bp.PackOrigin == PackOrigin.End)
 						xe -= availableWidth + spacing;
 
 					var slot = new Rectangle (bp.PackOrigin == PackOrigin.Start ? xs : xe, 0, availableWidth, size.Height);
-					widgets [n] = (IWidgetBackend)GetBackend (bp.Child);
-					rects [n] = bp.Child.Surface.GetPlacementInRect (slot).Round ().WithPositiveSize ();
+					widgets[n] = (IWidgetBackend)GetBackend (bp.Child);
+					rects[n] = bp.Child.Surface.GetPlacementInRect (slot).Round ().WithPositiveSize ();
 
 					if (bp.PackOrigin == PackOrigin.Start)
 						xs += availableWidth + spacing;
@@ -303,15 +303,15 @@ namespace Xwt
 				CalcDefaultSizes (size.Width, size.Height, true);
 				double ys = 0;
 				double ye = size.Height + spacing;
-				for (int n = 0; n < visibleChildren.Length; n++) {
+				for (int n=0; n<visibleChildren.Length; n++) {
 					var bp = visibleChildren [n];
 					double availableHeight = bp.NextSize >= 0 ? bp.NextSize : 0;
 					if (bp.PackOrigin == PackOrigin.End)
 						ye -= availableHeight + spacing;
 
 					var slot = new Rectangle (0, bp.PackOrigin == PackOrigin.Start ? ys : ye, size.Width, availableHeight);
-					widgets [n] = (IWidgetBackend)GetBackend (bp.Child);
-					rects [n] = bp.Child.Surface.GetPlacementInRect (slot).Round ().WithPositiveSize ();
+					widgets[n] = (IWidgetBackend)GetBackend (bp.Child);
+					rects[n] = bp.Child.Surface.GetPlacementInRect (slot).Round ().WithPositiveSize ();
 
 					if (bp.PackOrigin == PackOrigin.Start)
 						ys += availableHeight + spacing;
@@ -319,7 +319,7 @@ namespace Xwt
 			}
 			Backend.SetAllocation (widgets, rects);
 		}
-
+		
 		void CalcDefaultSizes (SizeConstraint width, SizeConstraint height, bool allowShrink)
 		{
 			bool vertical = direction == Orientation.Vertical;
@@ -351,7 +351,8 @@ namespace Xwt
 					if (bp.Child.ExpandsForOrientation (direction))
 						bp.NextSize += expandRemaining.NextSizePart ();
 				}
-			} else if (allowShrink && remaining < 0) {
+			}
+			else if (allowShrink && remaining < 0) {
 				// The box is not big enough to fit the widgets using its natural size.
 				// We have to shrink the widgets.
 
@@ -363,7 +364,7 @@ namespace Xwt
 					bp.NextSize -= sizePart.NextSizePart ();
 			}
 		}
-
+		
 		protected override Size OnGetPreferredSize (SizeConstraint widthConstraint, SizeConstraint heightConstraint)
 		{
 			Size s = new Size ();
@@ -404,7 +405,7 @@ namespace Xwt
 			return s;
 		}
 	}
-
+	
 	[Flags]
 	public enum BoxMode
 	{
@@ -413,21 +414,21 @@ namespace Xwt
 		Expand = 2,
 		FillAndExpand = 3
 	}
-
-	[ContentProperty ("Child")]
+	
+	[ContentProperty("Child")]
 	public class BoxPlacement
 	{
 		IContainerEventSink<BoxPlacement> parent;
 		int position;
 		PackOrigin packType = PackOrigin.Start;
 		Widget child;
-
+		
 		internal BoxPlacement (IContainerEventSink<BoxPlacement> parent, Widget child)
 		{
 			this.parent = parent;
 			this.child = child;
 		}
-
+		
 		internal double NextSize;
 
 		public int Position {
@@ -436,7 +437,7 @@ namespace Xwt
 			}
 			set {
 				if (value < 0)
-					throw new ArgumentException (Application.TranslationCatalog.GetString ("Position can't be negative"));
+					throw new ArgumentException ("Position can't be negative");
 				position = value;
 				parent.ChildChanged (this, "Position");
 			}
@@ -452,7 +453,7 @@ namespace Xwt
 				parent.ChildChanged (this, "PackType");
 			}
 		}
-
+		
 		public Widget Child {
 			get { return child; }
 			set {
@@ -464,18 +465,18 @@ namespace Xwt
 			}
 		}
 	}
-
+	
 	public enum PackOrigin
 	{
 		Start,
 		End
 	}
-
+	
 	class SizeSplitter
 	{
 		int rem;
 		int part;
-
+		
 		public SizeSplitter (double total, int numParts)
 		{
 			if (numParts > 0) {
@@ -483,13 +484,14 @@ namespace Xwt
 				rem = ((int)total) % numParts;
 			}
 		}
-
+		
 		public double NextSizePart ()
 		{
 			if (rem > 0) {
 				rem--;
 				return part + 1;
-			} else
+			}
+			else
 				return part;
 		}
 	}

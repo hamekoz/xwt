@@ -8,6 +8,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WpfTestRunner</RootNamespace>
     <AssemblyName>WpfTestRunner</AssemblyName>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <TestRunnerCommand>bin\WpfTestRunner.exe</TestRunnerCommand>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
