@@ -29,23 +29,11 @@
 // THE SOFTWARE.
 
 using System;
-using System.Collections.Generic;
-using Xwt.Backends;
-using System.Drawing;
-
-#if MONOMAC
-using nint = System.Int32;
-using nfloat = System.Single;
-using MonoMac.Foundation;
-using MonoMac.AppKit;
-using MonoMac.ObjCRuntime;
-using CGRect = System.Drawing.RectangleF;
-#else
-using Foundation;
 using AppKit;
-using ObjCRuntime;
 using CoreGraphics;
-#endif
+using Foundation;
+using ObjCRuntime;
+using Xwt.Backends;
 
 namespace Xwt.Mac
 {
@@ -238,11 +226,7 @@ namespace Xwt.Mac
 				switch (@event) {
 				case WindowFrameEvent.BoundsChanged:
 					DidResize += HandleDidResize;
-#if MONOMAC
-					DidMoved += HandleDidResize;
-#else
 					DidMove += HandleDidResize;
-#endif
 					break;
 				case WindowFrameEvent.Hidden:
 					EnableVisibilityEvent (@event);
@@ -358,11 +342,7 @@ namespace Xwt.Mac
 				switch (@event) {
 					case WindowFrameEvent.BoundsChanged:
 						DidResize -= HandleDidResize;
-#if MONOMAC
-					DidMoved -= HandleDidResize;
-#else
-					DidMove -= HandleDidResize;
-#endif
+						DidMove -= HandleDidResize;
 						break;
 					case WindowFrameEvent.Hidden:
 						this.WillClose -= OnWillClose;
@@ -522,11 +502,7 @@ namespace Xwt.Mac
 					// WORKAROUND:
 					// bump native reference count by calling DangerousRetain()
 					// base.Dispose will now unref the window correctly without crashing
-					#if MONOMAC
-					Messaging.void_objc_msgSend(this.Handle, retainSel.Handle);
-					#else
 					DangerousRetain();
-					#endif
 					// tell Cocoa to release the window on Close
 					ReleasedWhenClosed = true;
 					// Close the window (Cocoa will do its job even if the window is already closed)
