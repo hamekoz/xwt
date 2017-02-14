@@ -117,5 +117,9 @@ namespace Xwt
 			}
 			return false;
 		}
+
+		public void OnButtonPressed (ButtonEventArgs args)
+		{
+		}
 	}
 }
