@@ -99,10 +99,10 @@ namespace Xwt.GtkBackend
 
 		public DatePickerStyle Style {
 			get {
-				return Widget.Style;
+				return Widget.DatePickerStyle;
 			}
 			set {
-				Widget.Style = value;
+				Widget.DatePickerStyle = value;
 			}
 		}
 		
@@ -190,7 +190,7 @@ namespace Xwt.GtkBackend
 			}
 
 			DatePickerStyle style;
-			public new DatePickerStyle Style {
+			public DatePickerStyle DatePickerStyle {
 				get {
 					return style;
 				}
@@ -234,7 +234,7 @@ namespace Xwt.GtkBackend
 			                                                          DateTime.MaxValue.Ticks,
 			                                                          TimeSpan.TicksPerSecond)
 			{
-				Style = style;
+				DatePickerStyle = style;
 
 				Adjustment.PageIncrement = TimeSpan.TicksPerDay;
 				IsEditable = true;
@@ -260,7 +260,7 @@ namespace Xwt.GtkBackend
 			protected override int OnOutput ()
 			{
 				DateTime dateTime = new DateTime ((long)Adjustment.Value);
-				string format = styleFormats [(int)Style];
+				string format = styleFormats [(int)DatePickerStyle];
 
 				Text = dateTime.ToString (format);
 				return 1;

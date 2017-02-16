@@ -324,7 +324,9 @@ namespace Xwt.Mac
 	{
 		ITextBoxEventSink eventSink;
 		ApplicationContext context;
+		#pragma warning disable CS0414 // The private field is assigned but its value is never used
 		CustomCell cell;
+		#pragma warning disable CS0414
 
 		public CustomTextField (ITextBoxEventSink eventSink, ApplicationContext context)
 		{
