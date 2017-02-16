@@ -112,6 +112,8 @@ namespace Xwt.GtkBackend
 			RegisterBackend<IColorSelectorBackend, ColorSelectorBackend> ();
 			RegisterBackend<IColorPickerBackend, ColorPickerBackend> ();
 			RegisterBackend<ICalendarBackend, CalendarBackend> ();
+			RegisterBackend<IFontSelectorBackend, FontSelectorBackend> ();
+			RegisterBackend<ISelectFontDialogBackend, SelectFontDialogBackend> ();
 
 			string typeName = null;
 			string asmName = null;
@@ -150,8 +152,8 @@ namespace Xwt.GtkBackend
 
 		public override void Dispose ()
 		{
-			base.Dispose ();
 			GtkTextLayoutBackendHandler.DisposeResources ();
+			base.Dispose();
 		}
 
 		public override void RunApplication ()
@@ -267,6 +269,15 @@ namespace Xwt.GtkBackend
 			return win;
 		}
 
+		public override object GetNativeWindow (IWindowFrameBackend backend)
+		{
+			if (backend.Window is Gtk.Window)
+				return backend.Window;
+			if (Platform.IsMac)
+				return GtkMacInterop.GetGtkWindow (backend.Window);
+			return null;
+		}
+
 		public override object GetBackendForImage (object nativeImage)
 		{
 			if (nativeImage is Gdk.Pixbuf)
@@ -348,6 +359,17 @@ namespace Xwt.GtkBackend
 					f &= ~ToolkitFeatures.WindowOpacity;
 				return f;
 			}
+		}
+
+
+		protected override Type GetBackendImplementationType (Type backendType)
+		{
+			if (platformBackend != null) {
+				var bt = platformBackend.GetBackendImplementationType (backendType);
+				if (bt != null)
+					return bt;
+			}
+			return base.GetBackendImplementationType (backendType);
 		}
 	}
 	

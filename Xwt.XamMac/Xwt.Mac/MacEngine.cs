@@ -25,24 +25,12 @@
 // THE SOFTWARE.
 
 using System;
-
 using System.Collections.Generic;
-using Xwt.Backends;
-
-#if MONOMAC
-using nint = System.Int32;
-using nfloat = System.Single;
-using CGSize = System.Drawing.SizeF;
-using MonoMac.Foundation;
-using MonoMac.AppKit;
-using MonoMac.ObjCRuntime;
-using MonoMac.CoreGraphics;
-#else
-using Foundation;
 using AppKit;
-using ObjCRuntime;
 using CoreGraphics;
-#endif
+using Foundation;
+using ObjCRuntime;
+using Xwt.Backends;
 
 namespace Xwt.Mac
 {
@@ -57,7 +45,8 @@ namespace Xwt.Mac
 		
 		public override void InitializeApplication ()
 		{
-			NSApplication.Init ();
+			NSApplicationInitializer.Initialize ();
+
 			//Hijack ();
 			if (pool != null)
 				pool.Dispose ();
@@ -136,6 +125,7 @@ namespace Xwt.Mac
 			RegisterBackend <Xwt.Backends.ISaveFileDialogBackend, SaveFileDialogBackend> ();
 			RegisterBackend <Xwt.Backends.IColorPickerBackend, ColorPickerBackend> ();
 			RegisterBackend <Xwt.Backends.ICalendarBackend,CalendarBackend> ();
+			RegisterBackend <Xwt.Backends.ISelectFontDialogBackend, SelectFontDialogBackend> ();
 		}
 
 		public override void RunApplication ()
@@ -204,6 +194,20 @@ namespace Xwt.Mac
 			return wb.Widget;
 		}
 
+		public override object GetNativeImage (Xwt.Drawing.Image image)
+		{
+			if (image == null)
+				return null;
+			var img = (NSImage)base.GetNativeImage (image);
+			if (img is CustomImage) {
+				img = ((CustomImage)img).Clone ();
+				var idesc = image.ToImageDescription (ApplicationContext);
+				((CustomImage)img).Image = idesc;
+			}
+			img.Size = new CGSize ((nfloat)image.Size.Width, (nfloat)image.Size.Height);
+			return img;
+		}
+
 		public override bool HasNativeParent (Widget w)
 		{
 			var wb = GetNativeBackend (w);
@@ -223,6 +227,17 @@ namespace Xwt.Mac
 		public override Xwt.Backends.IWindowFrameBackend GetBackendForWindow (object nativeWindow)
 		{
 			throw new NotImplementedException ();
+		}
+
+		public override object GetNativeWindow (IWindowFrameBackend backend)
+		{
+			if (backend == null)
+				return null;
+			if (backend.Window is NSWindow)
+				return backend.Window;
+			if (Desktop.DesktopType == DesktopType.Mac && Toolkit.NativeEngine == ApplicationContext.Toolkit)
+				return Runtime.GetNSObject (backend.NativeHandle) as NSWindow;
+			return null;
 		}
 
 		public override object GetBackendForContext (object nativeWidget, object nativeContext)
@@ -265,6 +280,11 @@ namespace Xwt.Mac
 	{
 		bool launched;
 		List<WindowBackend> pendingWindows = new List<WindowBackend> ();
+
+		public event EventHandler<TerminationEventArgs> Terminating;
+		public event EventHandler Unhidden;
+		public event EventHandler<OpenFilesEventArgs> OpenFilesRequest;
+		public event EventHandler<OpenUrlEventArgs> OpenUrl;
 		
 		public AppDelegate (bool launched)
 		{
@@ -288,10 +308,89 @@ namespace Xwt.Mac
 				w.InternalShow ();
 		}
 
+		public override void WillFinishLaunching(NSNotification notification)
+		{
+			NSAppleEventManager eventManager = NSAppleEventManager.SharedAppleEventManager;
+			eventManager.SetEventHandler (this, new Selector ("handleGetURLEvent:withReplyEvent:"), AEEventClass.Internet, AEEventID.GetUrl);
+		}
+
+		[Export("handleGetURLEvent:withReplyEvent:")]
+		void HandleGetUrlEvent(NSAppleEventDescriptor descriptor, NSAppleEventDescriptor reply)
+		{
+			var openUrlEvent = OpenUrl;
+			if (openUrlEvent == null)
+				return;
+			
+			string keyDirectObjectString = "----";
+			uint keywordDirectObject = (((uint)keyDirectObjectString [0]) << 24 |
+				((uint)keyDirectObjectString [1]) << 16 |
+				((uint)keyDirectObjectString [2]) << 8 |
+				((uint)keyDirectObjectString [3]));
+			
+			string urlString = descriptor.ParamDescriptorForKeyword (keywordDirectObject).ToString ();
+			openUrlEvent (NSApplication.SharedApplication, new OpenUrlEventArgs (urlString));
+		}
+
 		public override void ScreenParametersChanged (NSNotification notification)
 		{
 			if (MacDesktopBackend.Instance != null)
 				MacDesktopBackend.Instance.NotifyScreensChanged ();
+		}
+
+		public override NSApplicationTerminateReply ApplicationShouldTerminate (NSApplication sender)
+		{
+			var terminatingEvent = Terminating;
+			if (terminatingEvent != null) {
+				var args = new TerminationEventArgs ();
+				terminatingEvent (NSApplication.SharedApplication, args);
+				return args.Reply;
+			}
+
+			return NSApplicationTerminateReply.Now;
+		}
+
+		public override void DidUnhide (NSNotification notification)
+		{
+			var unhiddenEvent = Unhidden;
+			if (unhiddenEvent != null)
+				unhiddenEvent (NSApplication.SharedApplication, EventArgs.Empty);
+		}
+
+		public override void OpenFiles (NSApplication sender, string[] filenames)
+		{
+			var openFilesEvent = OpenFilesRequest;
+			if (openFilesEvent != null) {
+				var args = new OpenFilesEventArgs (filenames);
+				openFilesEvent (NSApplication.SharedApplication, args);
+			}
+		}
+	}
+
+	public class TerminationEventArgs : EventArgs
+	{
+		public NSApplicationTerminateReply Reply {get; set;}
+
+		public TerminationEventArgs ()
+		{
+			Reply = NSApplicationTerminateReply.Now;
+		}
+	}
+
+	public class OpenFilesEventArgs : EventArgs
+	{
+		public string[] Filenames { get; set; }
+		public OpenFilesEventArgs (string[] filenames)
+		{
+			Filenames = filenames;
+		}
+	}
+
+	public class OpenUrlEventArgs : EventArgs
+	{
+		public string Url { get; set; }
+		public OpenUrlEventArgs (string url)
+		{
+			Url = url;
 		}
 	}
 }

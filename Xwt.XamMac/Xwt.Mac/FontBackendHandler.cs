@@ -25,21 +25,14 @@
 // THE SOFTWARE.
 
 using System;
-using Xwt.Backends;
-using Xwt.Drawing;
 using System.Collections.Generic;
-
-#if MONOMAC
-using nint = System.Int32;
-using nfloat = System.Single;
-using MonoMac.Foundation;
-using MonoMac.AppKit;
-using MonoMac.CoreText;
-#else
-using Foundation;
+using System.Globalization;
+using System.Text;
 using AppKit;
 using CoreText;
-#endif
+using Foundation;
+using Xwt.Backends;
+using Xwt.Drawing;
 
 namespace Xwt.Mac
 {
@@ -53,7 +46,7 @@ namespace Xwt.Mac
 		public override object GetSystemDefaultMonospaceFont ()
 		{
 			var font = NSFont.SystemFontOfSize (0);
-			return Create ("Menlo", font.PointSize, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
+			return Create (GetDefaultMonospaceFontNames(Desktop.DesktopType), font.PointSize, FontStyle.Normal, FontWeight.Normal, FontStretch.Normal);
 		}
 
 		public override IEnumerable<string> GetInstalledFonts ()
@@ -75,7 +68,15 @@ namespace Xwt.Mac
 		public override object Create (string fontName, double size, FontStyle style, FontWeight weight, FontStretch stretch)
 		{
 			var t = GetStretchTrait (stretch) | GetStyleTrait (style);
-			var f = NSFontManager.SharedFontManager.FontWithFamily (fontName, t, GetWeightValue (weight), (float)size);
+
+			var names = fontName.Split (new char[] {','}, StringSplitOptions.RemoveEmptyEntries);
+			NSFont f = null;
+			foreach (var name in names) {
+				f = NSFontManager.SharedFontManager.FontWithFamily (name.Trim (), t, GetWeightValue (weight), (float)size);
+				if (f != null) break;
+			}
+			if (f == null) return null;
+
 			var fd = FontData.FromFont (NSFontManager.SharedFontManager.ConvertFont (f, t));
 			fd.Style = style;
 			fd.Weight = weight;
@@ -109,7 +110,17 @@ namespace Xwt.Mac
 		{
 			FontData f = (FontData) handle;
 			f = f.Copy ();
-			f.Font = NSFontManager.SharedFontManager.ConvertFontToFamily (f.Font, family);
+
+			var names = family.Split (new char[] {','}, StringSplitOptions.RemoveEmptyEntries);
+			NSFont font = null;
+			foreach (var name in names) {
+				font = NSFontManager.SharedFontManager.ConvertFontToFamily (f.Font, name.Trim ());
+				if (font != null) {
+					f.Font = font;
+					break;
+				}
+			}
+
 			return f;
 		}
 
@@ -337,6 +348,19 @@ namespace Xwt.Mac
 				Weight = Weight,
 				Stretch = Stretch
 			};
+		}
+
+		public override string ToString ()
+		{
+			StringBuilder sb = new StringBuilder (Font.FamilyName);
+			if (Style != FontStyle.Normal)
+				sb.Append (' ').Append (Style);
+			if (Weight != FontWeight.Normal)
+				sb.Append (' ').Append (Weight);
+			if (Stretch != FontStretch.Normal)
+				sb.Append (' ').Append (Stretch);
+			sb.Append (' ').Append (Font.PointSize.ToString (CultureInfo.InvariantCulture));
+			return sb.ToString ();
 		}
 	}
 

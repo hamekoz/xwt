@@ -25,27 +25,12 @@
 // THE SOFTWARE.
 
 using System;
+using AppKit;
+using CoreGraphics;
+using CoreText;
+using Foundation;
 using Xwt.Backends;
 using Xwt.Drawing;
-
-#if MONOMAC
-using nint = System.Int32;
-using nfloat = System.Single;
-using MonoMac.Foundation;
-using MonoMac.AppKit;
-using MonoMac.CoreText;
-using MonoMac.CoreGraphics;
-using CGPoint = System.Drawing.PointF;
-using CGSize = System.Drawing.SizeF;
-using CGRect = System.Drawing.RectangleF;
-#else
-using Foundation;
-using AppKit;
-using CoreText;
-using CoreGraphics;
-#endif
-
-using System.Collections.Generic;
 
 namespace Xwt.Mac
 {
@@ -73,7 +58,7 @@ namespace Xwt.Mac
 		public override void SetFont (object backend, Xwt.Drawing.Font font)
 		{
 			LayoutInfo li = (LayoutInfo)backend;
-			li.Font = ((FontData)Toolkit.GetBackend (font)).Font;
+			li.Font = ((FontData)ApplicationContext.Toolkit.GetSafeBackend (font)).Font;
 		}
 		
 		public override void SetWidth (object backend, double value)
@@ -144,6 +129,12 @@ namespace Xwt.Mac
 				line.GetTypographicBounds (out ascent, out descent, out leading);
 				return (double)ascent;
 			}
+		}
+
+		public override double GetMeanline (object backend)
+		{
+			LayoutInfo li = (LayoutInfo)backend;
+			return GetBaseline (backend) - li.Font.XHeight / 2;
 		}
 
 		static CTFrame CreateFrame (LayoutInfo li)

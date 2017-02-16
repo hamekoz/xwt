@@ -73,6 +73,14 @@ namespace Samples
 				d.Buttons.Add (new DialogButton ("Custom OK", Command.Ok));
 				d.Buttons.Add (new DialogButton (Command.Cancel));
 				d.Buttons.Add (new DialogButton (Command.Ok));
+
+				d.DefaultCommand = custom;
+
+				d.CommandActivated += (sender, e) => {
+					if (e.Command == custom) {
+						e.Handled = !MessageDialog.Confirm ("Really close?", Command.Close);
+					}
+				};
 				
 				var r = d.Run (this.ParentWindow);
 				db.Label = "Result: " + (r != null ? r.Label : "(Closed)");
@@ -139,6 +147,21 @@ namespace Samples
 				dlg.Color = Xwt.Drawing.Colors.AliceBlue;
 				if (dlg.Run (ParentWindow))
 					MessageDialog.ShowMessage ("A color has been selected!", dlg.Color.ToString ());
+			};
+
+			b = new Button ("Show Select Font dialog");
+			PackStart (b);
+			b.Clicked += delegate {
+				SelectFontDialog dlg = new SelectFontDialog ();
+				if (dlg.Run (ParentWindow)) {
+					Dialog d = new Dialog ();
+					d.Title = "A font has been selected!";
+					d.Content = new Label (dlg.SelectedFont.ToString ());
+					d.Content.Font = dlg.SelectedFont;
+					d.Buttons.Add (new DialogButton (Command.Ok));
+					d.Run (this.ParentWindow);
+					d.Dispose ();
+				}
 			};
 
 			b = new Button("Show window shown event");

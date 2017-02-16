@@ -26,24 +26,12 @@
 
 
 using System;
-using Xwt.Backends;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-
-#if MONOMAC
-using nint = System.Int32;
-using nfloat = System.Single;
-using CGRect = System.Drawing.RectangleF;
-using CGPoint = System.Drawing.PointF;
-using CGSize = System.Drawing.SizeF;
-using MonoMac.Foundation;
-using MonoMac.AppKit;
-#else
-using Foundation;
 using AppKit;
 using CoreGraphics;
-#endif
+using Foundation;
+using Xwt.Backends;
 
 namespace Xwt.Mac
 {
@@ -63,13 +51,10 @@ namespace Xwt.Mac
 			}
 		}
 
-		static CompositeCell ()
-		{
-			Util.MakeCopiable<CompositeCell> ();
-		}
-
 		public CompositeCell (ApplicationContext context, Orientation dir, ICellSource source)
 		{
+			if (source == null)
+				throw new ArgumentNullException ("source");
 			direction = dir;
 			this.context = context;
 			this.source = source;
@@ -102,18 +87,18 @@ namespace Xwt.Mac
 			source.SetCurrentEventRow (tablePosition.Position);
 		}
 
-#if !MONOMAC
 		public override NSObject Copy (NSZone zone)
 		{
 			var ob = (ICopiableObject) base.Copy (zone);
 			ob.CopyFrom (this);
 			return (NSObject) ob;
 		}
-#endif
 
 		void ICopiableObject.CopyFrom (object other)
 		{
 			var ob = (CompositeCell)other;
+			if (ob.source == null)
+				throw new ArgumentException ("Cannot copy from a CompositeCell with a null `source`");
 			context = ob.context;
 			source = ob.source;
 			val = ob.val;
@@ -173,8 +158,6 @@ namespace Xwt.Mac
 			}
 
 			var s = CellSize;
-			if (s.Height > source.RowHeight)
-				source.RowHeight = s.Height;
 		}
 
 		IEnumerable<ICellRenderer> VisibleCells {
