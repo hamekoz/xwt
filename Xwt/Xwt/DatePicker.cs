@@ -26,6 +26,7 @@
 
 using System;
 using Xwt.Backends;
+using System.ComponentModel;
 
 namespace Xwt
 {
@@ -114,7 +115,19 @@ namespace Xwt
 				Backend.Style = value;
 			}
 		}
-		
+
+		[DefaultValue (false)]
+		public bool ReadOnly {
+			get { return Backend.ReadOnly; }
+			set { Backend.ReadOnly = value; }
+		}
+
+		[DefaultValue (true)]
+		public bool WithCalendarButton {
+			get { return Backend.WithCalendarButton; }
+			set { Backend.WithCalendarButton = value; }
+		}
+
 		protected virtual void OnValueChanged (EventArgs e)
 		{
 			if (valueChanged != null)

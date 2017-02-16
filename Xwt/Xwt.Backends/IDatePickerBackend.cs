@@ -34,6 +34,8 @@ namespace Xwt.Backends
 		DateTime MinimumDateTime { get; set; }
 		DateTime MaximumDateTime { get; set; }
 		DatePickerStyle Style { get; set; }
+		bool ReadOnly { get; set; }
+		bool WithCalendarButton { get; set; }
 	}
 
 	public interface IDatePickerEventSink: IWidgetEventSink

@@ -4,6 +4,7 @@
 // Author:
 //       Jérémie Laval <jeremie.laval@xamarin.com>
 //       Vsevolod Kukol <sevo@sevo.org>
+//       Claudio Rodrigo Pereyra Diaz <claudiorodrigo@pereyradiaz.com.ar>
 //
 // Copyright (c) 2012 Xamarin, Inc.
 //
@@ -57,6 +58,24 @@ namespace Xwt.GtkBackend
 			}
 			set {
 				Widget.DateTime = value;
+			}
+		}
+
+		public bool ReadOnly {
+			get {
+				return !Widget.IsEditable;
+			}
+			set {
+				Widget.IsEditable = !value;
+			}
+		}
+
+		public bool WithCalendarButton {
+			get {
+				return Widget.WithCalendarButton;
+			}
+			set {
+				Widget.WithCalendarButton = value;
 			}
 		}
 
@@ -228,8 +247,6 @@ namespace Xwt.GtkBackend
 			{
 				if (Math.Abs (Adjustment.Value - currentValue.Ticks) < 1)
 					return;
-				}
-				double currentValue = oldValue;
 
 				if (selectedComponent == DateTimeComponent.None)
 					SelectComponent (componentsSorted.Last ());
@@ -353,8 +370,6 @@ namespace Xwt.GtkBackend
 					SelectComponentAtPosition (TextIndexToLayoutIndex (index));
 					GrabFocus ();
 					return false;
-				} else {
-					return base.OnButtonPressEvent (evnt);
 				}
 				SelectComponent (DateTimeComponent.None);
 				return base.OnButtonPressEvent (evnt);
@@ -508,7 +523,27 @@ namespace Xwt.GtkBackend
 				ExpandVertical = false,
 				ExpandHorizontal = false,
 			};
-			readonly Button NowButton = new Button ();
+
+			bool editable;
+
+			public bool IsEditable {
+				get{ return editable; }
+				set {
+					editable = value;
+					datepickerentry.CanFocus = toggleButton.Sensitive = datepickerentry.IsEditable = editable;
+				}
+			}
+
+			public bool WithCalendarButton {
+				get{ return toggleButton.Visible; }
+				set {
+					toggleButton.Visible = value;
+				}
+			}
+
+			readonly Button nowButton = new Button {
+				Label = "Today",
+			};
 			readonly Calendar calendar = new Calendar ();
 			readonly SpinButton hours = new SpinButton {
 				MinimumValue = 0,
@@ -545,48 +580,49 @@ namespace Xwt.GtkBackend
 				}
 			}
 
-			public DateTime MinDateTime {
+			public DateTime MinimumDateTime {
 				get {
-					return datepickerentry.MinDateTime;
+					return datepickerentry.MinimumDateTime;
 				}
 				set {
-					datepickerentry.MinDateTime = value;
+					datepickerentry.MinimumDateTime = value;
 				}
 			}
 
-			public DateTime MaxDateTime {
+			public DateTime MaximumDateTime {
 				get {
-					return datepickerentry.MaxDateTime;
+					return datepickerentry.MaximumDateTime;
 				}
 				set {
-					datepickerentry.MaxDateTime = value;
+					datepickerentry.MaximumDateTime = value;
 				}
 			}
 
-			public DatePickerStyle DateTimeStyle {
+			public DatePickerStyle DatePickerStyle {
 				get {
-					return datepickerentry.Style;
+					return datepickerentry.DatePickerStyle;
 				}
 				set {
-					datepickerentry.Style = value;
+					datepickerentry.DatePickerStyle = value;
 					switch (value) {
 					case DatePickerStyle.Date:
 						datetimeBox.Clear ();
 						datetimeBox.PackStart (calendar);
-						NowButton.Label = "Today";
+						nowButton.Label = Application.TranslationCatalog.GetString ("Today");
 						break;
 					case DatePickerStyle.DateTime:
 						datetimeBox.Clear ();
 						datetimeBox.PackStart (calendar);
 						datetimeBox.PackStart (timeBox);
-						NowButton.Label = "Today Now";
+						nowButton.Label = Application.TranslationCatalog.GetString ("Today and Now");
 						break;
 					case DatePickerStyle.Time:
 						datetimeBox.Clear ();
 						datetimeBox.PackStart (timeBox);
-						NowButton.Label = "Now";
+						nowButton.Label = Application.TranslationCatalog.GetString ("Now");
 						break;
 					}
+					datetimeBox.PackStart (nowButton);
 				}
 			}
 
@@ -600,6 +636,7 @@ namespace Xwt.GtkBackend
 
 			public GtkDatePicker ()
 			{
+				datepickerentry.ValueChanged += HandleValueChanged;
 				toggleButton.HorizontalPlacement = WidgetPlacement.Start;
 				DateTime = DateTime.Now;
 				toggleButton.HeightRequest = (double)datepickerentry.HeightRequest;
@@ -616,6 +653,8 @@ namespace Xwt.GtkBackend
 
 				datetimeBox.PackStart (calendar);
 				datetimeBox.PackStart (timeBox);
+				datetimeBox.PackStart (nowButton);
+
 
 				popover.Content = datetimeBox;
 				popover.Closed += delegate {
@@ -641,7 +680,12 @@ namespace Xwt.GtkBackend
 						popover.Hide ();
 					}
 				};
-				NowButton.Clicked += (sender, e) => DateTime = DateTime.Now;
+				nowButton.Clicked += delegate {
+					calendar.Date = DateTime.Now.Date;
+					hours.Value = (double)DateTime.Now.Hour;
+					minutes.Value = (double)DateTime.Now.Minute;
+					seconds.Value = (double)DateTime.Now.Second;
+				};
 				Add (datepickerentry);
 				var nativeToggleButton = (Gtk.ToggleButton)Toolkit.CurrentEngine.GetNativeWidget (toggleButton);
 				PackEnd (nativeToggleButton, false, false, 0);
