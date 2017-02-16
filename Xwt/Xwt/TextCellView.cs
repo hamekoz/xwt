@@ -41,24 +41,38 @@ namespace Xwt
 		EllipsizeMode ellipsize;
 
 		public IDataField TextField { get; set; }
+
 		public IDataField<string> MarkupField { get; set; }
+
 		public IDataField<bool> EditableField { get; set; }
+
 		public IDataField<EllipsizeMode> EllipsizeField { get; set; }
+
+		static TextCellView ()
+		{
+			EventHost.MapEvent (WidgetEvent.KeyPressed, typeof(TextCellView), "OnKeyPressed");
+			EventHost.MapEvent (WidgetEvent.KeyReleased, typeof(TextCellView), "OnKeyReleased");
+			EventHost.MapEvent (WidgetEvent.MouseEntered, typeof(TextCellView), "OnMouseEntered");
+			EventHost.MapEvent (WidgetEvent.MouseExited, typeof(TextCellView), "OnMouseExited");
+			EventHost.MapEvent (WidgetEvent.ButtonPressed, typeof(TextCellView), "OnButtonPressed");
+			EventHost.MapEvent (WidgetEvent.ButtonReleased, typeof(TextCellView), "OnButtonReleased");
+			EventHost.MapEvent (WidgetEvent.MouseMoved, typeof(TextCellView), "OnMouseMoved");
+		}
 
 		public TextCellView ()
 		{
 		}
-		
+
 		public TextCellView (IDataField textField)
 		{
 			TextField = textField;
 		}
-		
+
 		public TextCellView (string text)
 		{
 			this.text = text;
 		}
-		
+
 		[DefaultValue (null)]
 		public string Text {
 			get {
@@ -116,10 +130,6 @@ namespace Xwt
 				return args.Handled;
 			}
 			return false;
-		}
-
-		public void OnButtonPressed (ButtonEventArgs args)
-		{
 		}
 	}
 }
