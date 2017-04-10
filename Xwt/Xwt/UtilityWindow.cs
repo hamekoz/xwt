@@ -1,21 +1,21 @@
-// 
-// CellViewCollection.cs
-//  
+﻿//
+// UtilityWindow.cs
+//
 // Author:
-//       Lluis Sanchez <lluis@xamarin.com>
-// 
-// Copyright (c) 2011 Xamarin Inc
-// 
+//       Vsevolod Kukol <sevoku@microsoft.com>
+//
+// Copyright (c) 2017 Microsoft Corporation
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,54 +24,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
-using Xwt.Drawing;
-using System.Collections.ObjectModel;
-using System.Collections.Generic;
-
+using Xwt.Backends;
 namespace Xwt
 {
-	public class CellViewCollection: Collection<CellView>
+	[BackendType (typeof (IUtilityWindowBackend))]
+	public class UtilityWindow : Window
 	{
-		ICellContainer parent;
-		
-		internal CellViewCollection (ICellContainer parent)
+		public UtilityWindow () : base (0)
 		{
-			this.parent = parent;
-		}
-		
-		protected override void InsertItem (int index, CellView item)
-		{
-			base.InsertItem (index, item);
-			if (parent != null)
-				parent.NotifyCellChanged ();
-		}
-		
-		protected override void RemoveItem (int index)
-		{
-			base.RemoveItem (index);
-			if (parent != null)
-				parent.NotifyCellChanged ();
-		}
-		
-		protected override void SetItem (int index, CellView item)
-		{
-			base.SetItem (index, item);
-			if (parent != null)
-				parent.NotifyCellChanged ();
-		}
-		
-		protected override void ClearItems ()
-		{
-			base.ClearItems ();
-			if (parent != null)
-				parent.NotifyCellChanged ();
 		}
 
-		public void Add (CellView item, bool expands)
+		protected new class WindowBackendHost : Window.WindowBackendHost
 		{
-			item.Expands = expands;
-			Add (item);
+			new UtilityWindow Parent { get { return (UtilityWindow)base.Parent; } }
+
+			protected override void OnBackendCreated ()
+			{
+				base.OnBackendCreated ();
+				((IUtilityWindowBackend)Backend).Initialize (this);
+			}
+		}
+
+		protected override BackendHost CreateBackendHost ()
+		{
+			return new WindowBackendHost ();
+		}
+
+		IUtilityWindowBackend Backend {
+			get { return (IUtilityWindowBackend)BackendHost.Backend; }
 		}
 	}
 }

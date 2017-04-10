@@ -27,6 +27,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Linq;
 using AppKit;
 using Foundation;
 using Xwt.Backends;
@@ -66,28 +67,33 @@ namespace Xwt.Mac
 
 		internal void AutosizeColumns ()
 		{
-			foreach (var col in TableColumns ())
+			var columns = TableColumns ();
+			foreach (var col in columns)
 				AutosizeColumn (col);
+			if (columns.Any (c => c.ResizingMask.HasFlag (NSTableColumnResizing.Autoresizing)))
+				SizeToFit ();
 		}
 
 		void AutosizeColumn (NSTableColumn tableColumn)
 		{
 			var column = IndexOfColumn (tableColumn);
-			if (tableColumn.ResizingMask.HasFlag (NSTableColumnResizing.Autoresizing)) {
-				var s = tableColumn.HeaderCell.CellSize;
+
+			var s = tableColumn.HeaderCell.CellSize;
+			if (!tableColumn.ResizingMask.HasFlag (NSTableColumnResizing.UserResizingMask)) {
 				for (int i = 0; i < base.RowCount; i++) {
 					var cell = GetCell (column, i);
-					if (column == 0) { // first column contains expanders
+					if (column == 0)
+					{ // first column contains expanders
 						var f = GetCellFrame (column, i);
 						s.Width = (nfloat)Math.Max (s.Width, f.X + cell.CellSize.Width);
-					} else
+					}
+					else
 						s.Width = (nfloat)Math.Max (s.Width, cell.CellSize.Width);
 				}
-				if (!tableColumn.ResizingMask.HasFlag (NSTableColumnResizing.UserResizingMask))
-					tableColumn.MinWidth = s.Width;
-				if (column < ColumnCount - 1)
+				if (!tableColumn.ResizingMask.HasFlag (NSTableColumnResizing.Autoresizing))
 					tableColumn.Width = s.Width;
 			}
+			tableColumn.MinWidth = s.Width;
 		}
 
 		nint IndexOfColumn (NSTableColumn tableColumn)
