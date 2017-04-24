@@ -261,9 +261,7 @@ namespace Xwt.Mac
 			    cacheSelectionLength != SelectionLength) {
 				cacheSelectionStart = SelectionStart;
 				cacheSelectionLength = SelectionLength;
-				ApplicationContext.InvokeUserCode (delegate {
-					EventSink.OnSelectionChanged ();
-				});
+                ApplicationContext.InvokeUserCode (EventSink.OnSelectionChanged);
 			}
 		}
 
@@ -411,9 +409,7 @@ namespace Xwt.Mac
 
 			void HandleSelectionDidChange (NSNotification notif)
 			{
-				Context.InvokeUserCode (delegate {
-					EventSink.OnSelectionChanged ();
-				});
+				Context.InvokeUserCode (EventSink.OnSelectionChanged);
 			}
 
 			public override void DrawInteriorWithFrame (CGRect cellFrame, NSView inView)
