@@ -42,16 +42,16 @@ namespace Xwt.GtkBackend
 			Widget = new GtkDatePicker ();
 			Widget.ShowAll ();
 		}
-
+		
 		new GtkDatePicker Widget {
 			get { return (GtkDatePicker)base.Widget; }
 			set { base.Widget = value; }
 		}
-
+		
 		protected new IDatePickerEventSink EventSink {
 			get { return (IDatePickerEventSink)base.EventSink; }
 		}
-
+		
 		public DateTime DateTime {
 			get {
 				return Widget.DateTime;
@@ -105,7 +105,7 @@ namespace Xwt.GtkBackend
 				Widget.DatePickerStyle = value;
 			}
 		}
-
+		
 		public override void EnableEvent (object eventId)
 		{
 			base.EnableEvent (eventId);
@@ -114,7 +114,7 @@ namespace Xwt.GtkBackend
 					Widget.ValueChanged += HandleValueChanged;
 			}
 		}
-
+		
 		public override void DisableEvent (object eventId)
 		{
 			base.DisableEvent (eventId);
@@ -128,29 +128,29 @@ namespace Xwt.GtkBackend
 		{
 			ApplicationContext.InvokeUserCode (EventSink.ValueChanged);
 		}
-
+		
 		public class GtkDatePickerEntry : Gtk.SpinButton
 		{
 			static string[] styleFormats = new string[3];
 
 			static GtkDatePickerEntry ()
 			{
-				styleFormats [(int)DatePickerStyle.Date] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;
+				styleFormats[(int)DatePickerStyle.Date] = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;
 				// we use a custom static long time pattern, since we do not support 12/24 formats
 				string timeSeparator = CultureInfo.CurrentCulture.DateTimeFormat.TimeSeparator;
-				styleFormats [(int)DatePickerStyle.Time] = "HH" + timeSeparator + "mm" + timeSeparator + "ss";
-				styleFormats [(int)DatePickerStyle.DateTime] = styleFormats [(int)DatePickerStyle.Date] + " " + styleFormats [(int)DatePickerStyle.Time];
+				styleFormats[(int)DatePickerStyle.Time] = "HH" + timeSeparator + "mm" + timeSeparator + "ss";
+				styleFormats[(int)DatePickerStyle.DateTime] = styleFormats[(int)DatePickerStyle.Date] + " " + styleFormats[(int)DatePickerStyle.Time];
 			}
 
-			Dictionary<DateTimeComponent, int> componentPosition = new Dictionary<DateTimeComponent, int> ();
-			Dictionary<DateTimeComponent, int> componentLength = new Dictionary<DateTimeComponent, int> ();
-			List<DateTimeComponent> componentsSorted = new List<DateTimeComponent> ();
+			Dictionary<DateTimeComponent, int> componentPosition = new Dictionary<DateTimeComponent, int>();
+			Dictionary<DateTimeComponent, int> componentLength = new Dictionary<DateTimeComponent, int>();
+			List<DateTimeComponent> componentsSorted = new List<DateTimeComponent>();
 			
 			public new EventHandler ValueChanged;
 
 			DateTimeComponent selectedComponent = DateTimeComponent.None;
 
-			GtkClipboardBackend clipboard = new GtkClipboardBackend ();
+			GtkClipboardBackend clipboard = new GtkClipboardBackend();
 
 			DateTime currentValue = DateTime.MinValue;
 
@@ -188,7 +188,6 @@ namespace Xwt.GtkBackend
 			}
 
 			DatePickerStyle style;
-
 			public DatePickerStyle DatePickerStyle {
 				get {
 					return style;
@@ -228,10 +227,10 @@ namespace Xwt.GtkBackend
 			public GtkDatePickerEntry () : this (DatePickerStyle.DateTime)
 			{
 			}
-
+	
 			public GtkDatePickerEntry (DatePickerStyle style) : base (DateTime.MinValue.Ticks,
-				                                                         DateTime.MaxValue.Ticks,
-				                                                         TimeSpan.TicksPerSecond)
+			                                                          DateTime.MaxValue.Ticks,
+			                                                          TimeSpan.TicksPerSecond)
 			{
 				DatePickerStyle = style;
 
@@ -256,6 +255,12 @@ namespace Xwt.GtkBackend
 					DateTime = currentValue.AddComponent (selectedComponent, -1);
 			}
 
+			protected override void OnDestroyed()
+			{
+				Adjustment.ValueChanged -= HandleValueChanged;
+				base.OnDestroyed();
+			}
+
 			protected override int OnOutput ()
 			{
 				DateTime dateTime = new DateTime ((long)Adjustment.Value);
@@ -264,7 +269,7 @@ namespace Xwt.GtkBackend
 				Text = dateTime.ToString (format);
 				return 1;
 			}
-
+			
 			protected override int OnInput (out double new_value)
 			{
 				new_value = Adjustment.Value;
@@ -292,13 +297,13 @@ namespace Xwt.GtkBackend
 
 			protected override void OnClipboardPasted ()
 			{
-				if (clipboard.IsTypeAvailable (TransferDataType.Text)) {
-					var newText = clipboard.GetData (TransferDataType.Text) as string;
+				if (clipboard.IsTypeAvailable(TransferDataType.Text)) {
+					var newText = clipboard.GetData(TransferDataType.Text) as string;
 					DateTime newDateTime;
 					if (DateTime.TryParse (newText, out newDateTime))
 						DateTime = newDateTime;
-					else if (componentLength.ContainsKey (selectedComponent)
-					         && componentLength [selectedComponent] == newText.Length) {
+					else  if (componentLength.ContainsKey (selectedComponent) 
+					          && componentLength[selectedComponent] == newText.Length) {
 
 						try {
 							var value = int.Parse (newText);
@@ -311,7 +316,6 @@ namespace Xwt.GtkBackend
 			}
 
 			Gdk.Window entryWindow;
-
 			Gdk.Window EntryWindow {
 				get {
 					if (entryWindow == null) {
@@ -346,7 +350,7 @@ namespace Xwt.GtkBackend
 					return entryWindow;
 				}
 			}
-
+			
 			protected override bool OnButtonPressEvent (Gdk.EventButton evnt)
 			{
 				// handle left click only
@@ -362,9 +366,9 @@ namespace Xwt.GtkBackend
 				GetLayoutOffsets (out layoutX, out layoutY);
 				int index, trailing;
 				bool insideLayout = Layout.XyToIndex (Pango.Units.FromPixels ((int)evnt.X),
-					                    Pango.Units.FromPixels ((int)evnt.Y),
-					                    out index,
-					                    out trailing);
+				                                      Pango.Units.FromPixels ((int)evnt.Y),
+				                                      out index,
+				                                      out trailing);
 
 				if (insideLayout) {
 					SelectComponentAtPosition (TextIndexToLayoutIndex (index));
@@ -376,12 +380,11 @@ namespace Xwt.GtkBackend
 			}
 
 			int currentDigitInsert;
-
 			protected override bool OnKeyReleaseEvent (Gdk.EventKey evnt)
 			{
 				char pressedKey = (char)Gdk.Keyval.ToUnicode (evnt.KeyValue);
 
-				if (char.IsWhiteSpace (pressedKey) || char.IsPunctuation (pressedKey) || char.IsSeparator (pressedKey)) {
+				if (char.IsWhiteSpace(pressedKey) || char.IsPunctuation (pressedKey) || char.IsSeparator (pressedKey)) {
 					if (pressedKey != '\t') // exclude tab
 						SelectNextComponent ();
 				}
@@ -390,7 +393,7 @@ namespace Xwt.GtkBackend
 					try {
 						DateTime current = DateTime;
 						current = current.SetComponent (selectedComponent, AddDigitToValue (current.GetComponent (selectedComponent), pressedKey));
-						if (currentDigitInsert < componentLength [selectedComponent] - 1)
+						if (currentDigitInsert < componentLength[selectedComponent] - 1)
 							currentDigitInsert++;
 						else
 							currentDigitInsert = 0;
@@ -416,7 +419,7 @@ namespace Xwt.GtkBackend
 					return int.Parse (newValue.ToString ());
 				return int.Parse (baseValue.ToString () + newValue);
 			}
-
+	
 			protected override bool OnKeyPressEvent (Gdk.EventKey evnt)
 			{
 
@@ -435,7 +438,7 @@ namespace Xwt.GtkBackend
 				// (i.e. navigation keys)
 				uint value = Gdk.Keyval.ToUnicode (evnt.KeyValue);
 				var xwtModifiers = evnt.State.ToXwtValue ();
-				if (value == 0 || value == '\t' || xwtModifiers.HasFlag (ModifierKeys.Control) || xwtModifiers.HasFlag (ModifierKeys.Alt))
+				if (value == 0 || value == '\t' || xwtModifiers.HasFlag(ModifierKeys.Control) || xwtModifiers.HasFlag (ModifierKeys.Alt))
 					return base.OnKeyPressEvent (evnt);
 				return true;
 			}
@@ -443,7 +446,7 @@ namespace Xwt.GtkBackend
 			void SelectComponentAtPosition (int characterIndex)
 			{
 				foreach (var entry in componentPosition) {
-					if (characterIndex >= entry.Value && characterIndex <= entry.Value + componentLength [entry.Key]) {
+					if (characterIndex >= entry.Value  && characterIndex <= entry.Value + componentLength [entry.Key]) {
 						SelectComponent (entry.Key);
 						return;
 					}
@@ -455,8 +458,8 @@ namespace Xwt.GtkBackend
 			{
 				int startPos, endPos;
 				if (componentPosition.ContainsKey (component) && componentLength.ContainsKey (component)) {
-					startPos = componentPosition [component];
-					endPos = startPos + componentLength [component];
+					startPos = componentPosition[component];
+					endPos = startPos + componentLength[component];
 				} else {
 					startPos = CursorPosition;
 					endPos = CursorPosition;
@@ -472,13 +475,13 @@ namespace Xwt.GtkBackend
 			void SelectNextComponent ()
 			{
 				if (selectedComponent == DateTimeComponent.None ||
-				    componentsSorted.IndexOf (selectedComponent) == componentsSorted.Count - 1)
+				        componentsSorted.IndexOf (selectedComponent) == componentsSorted.Count - 1)
 					selectedComponent = componentsSorted [0];
 				else
 					selectedComponent = componentsSorted [componentsSorted.IndexOf (selectedComponent) + 1];
 
-				int startPos = componentPosition [selectedComponent];
-				int endPos = startPos + componentLength [selectedComponent];
+				int startPos = componentPosition[selectedComponent];
+				int endPos = startPos + componentLength[selectedComponent];
 				SelectRegion (startPos, endPos);
 				currentDigitInsert = 0;
 			}
@@ -486,17 +489,17 @@ namespace Xwt.GtkBackend
 			void SelectPrevComponent ()
 			{
 				if (selectedComponent == DateTimeComponent.None ||
-				    componentsSorted.IndexOf (selectedComponent) == 0)
+				        componentsSorted.IndexOf (selectedComponent) == 0)
 					selectedComponent = componentsSorted [componentsSorted.Count - 1];
 				else
 					selectedComponent = componentsSorted [componentsSorted.IndexOf (selectedComponent) - 1];
 
-				int startPos = componentPosition [selectedComponent];
-				int endPos = startPos + componentLength [selectedComponent];
+				int startPos = componentPosition[selectedComponent];
+				int endPos = startPos + componentLength[selectedComponent];
 				SelectRegion (startPos, endPos);
 				currentDigitInsert = 0;
 			}
-
+			
 			void RaiseChangedEvent ()
 			{
 				var tmp = ValueChanged;
@@ -504,7 +507,7 @@ namespace Xwt.GtkBackend
 					tmp (this, EventArgs.Empty);
 			}
 
-			[Obsolete ("Use DateTime property instead.")]
+			[Obsolete("Use DateTime property instead.")]
 			public DateTime CurrentValue {
 				get {
 					return DateTime;
@@ -694,8 +697,7 @@ namespace Xwt.GtkBackend
 		}
 	}
 
-	enum DateTimeComponent
-	{
+	enum DateTimeComponent {
 		None = 0,
 		Month,
 		Day,
@@ -707,47 +709,47 @@ namespace Xwt.GtkBackend
 
 	static class DateTimeExtensions
 	{
-		public static DateTime AddComponent (this DateTime dateTime, DateTimeComponent component, int value)
+		public static DateTime AddComponent(this DateTime dateTime, DateTimeComponent component, int value)
 		{
 			try {
 				switch (component) {
-				case DateTimeComponent.Second:
-					return dateTime.AddSeconds (value);
-				case DateTimeComponent.Minute:
-					return dateTime.AddMinutes (value);
-				case DateTimeComponent.Hour:
-					return dateTime.AddHours (value);
-				case DateTimeComponent.Day:
-					return dateTime.AddDays (value);
-				case DateTimeComponent.Month:
-					return dateTime.AddMonths (value);
-				case DateTimeComponent.Year:
-					return dateTime.AddYears (value);
-				default:
-					return dateTime.AddSeconds (value);
+					case DateTimeComponent.Second:
+						return dateTime.AddSeconds (value);
+					case DateTimeComponent.Minute:
+						return dateTime.AddMinutes (value);
+					case DateTimeComponent.Hour:
+						return dateTime.AddHours (value);
+					case DateTimeComponent.Day:
+						return dateTime.AddDays (value);
+					case DateTimeComponent.Month:
+						return dateTime.AddMonths (value);
+					case DateTimeComponent.Year:
+						return dateTime.AddYears (value);
+					default:
+						return dateTime.AddSeconds (value);
 				}
 			} catch (ArgumentOutOfRangeException) {
 				return dateTime;
 			}
 		}
 
-		public static int GetComponent (this DateTime dateTime, DateTimeComponent component)
+		public static int GetComponent(this DateTime dateTime, DateTimeComponent component)
 		{
 			switch (component) {
-			case DateTimeComponent.Second:
-				return dateTime.Second;
-			case DateTimeComponent.Minute:
-				return dateTime.Minute;
-			case DateTimeComponent.Hour:
-				return dateTime.Hour;
-			case DateTimeComponent.Day:
-				return dateTime.Day;
-			case DateTimeComponent.Month:
-				return dateTime.Month;
-			case DateTimeComponent.Year:
-				return dateTime.Year;
-			default:
-				return 0;
+				case DateTimeComponent.Second:
+					return dateTime.Second;
+				case DateTimeComponent.Minute:
+					return dateTime.Minute;
+				case DateTimeComponent.Hour:
+					return dateTime.Hour;
+				case DateTimeComponent.Day:
+					return dateTime.Day;
+				case DateTimeComponent.Month:
+					return dateTime.Month;
+				case DateTimeComponent.Year:
+					return dateTime.Year;
+				default:
+					return 0;
 			}
 		}
 
@@ -760,20 +762,20 @@ namespace Xwt.GtkBackend
 			int minute = source.Minute;
 			int second = source.Second;
 			switch (component) {
-			case DateTimeComponent.Year:
-				return new DateTime (newValue, month, day, hour, minute, second);
-			case DateTimeComponent.Month:
-				return new DateTime (year, newValue, day, hour, minute, second);
-			case DateTimeComponent.Day:
-				return new DateTime (year, month, newValue, hour, minute, second);
-			case DateTimeComponent.Hour:
-				return new DateTime (year, month, day, newValue, minute, second);
-			case DateTimeComponent.Minute:
-				return new DateTime (year, month, day, hour, newValue, second);
-			case DateTimeComponent.Second:
-				return new DateTime (year, month, day, hour, minute, newValue);
-			default:
-				return source;
+				case DateTimeComponent.Year:
+					return new DateTime (newValue, month, day, hour, minute, second);
+				case DateTimeComponent.Month:
+					return new DateTime (year, newValue, day, hour, minute, second);
+				case DateTimeComponent.Day:
+					return new DateTime (year, month, newValue, hour, minute, second);
+				case DateTimeComponent.Hour:
+					return new DateTime (year, month, day, newValue, minute, second);
+				case DateTimeComponent.Minute:
+					return new DateTime (year, month, day, hour, newValue, second);
+				case DateTimeComponent.Second:
+					return new DateTime (year, month, day, hour, minute, newValue);
+				default:
+					return source;
 			}
 		}
 	}

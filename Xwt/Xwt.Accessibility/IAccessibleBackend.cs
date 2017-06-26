@@ -1,5 +1,5 @@
 ﻿//
-// UtilityWindow.cs
+// AccessibleBackendHandler.cs
 //
 // Author:
 //       Vsevolod Kukol <sevoku@microsoft.com>
@@ -23,29 +23,47 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+using System;
+using Xwt.Accessibility;
 
-using Xwt.Backends;
-namespace Xwt
+namespace Xwt.Backends
 {
-	[BackendType (typeof (IUtilityWindowBackend))]
-	public class UtilityWindow : Window
+	public interface IAccessibleBackend : IBackend
 	{
-		public UtilityWindow () : base (0)
-		{
-		}
+		void Initialize (IWidgetBackend parentWidget, IAccessibleEventSink eventSink);
 
-		protected new class WindowBackendHost : Window.WindowBackendHost
-		{
-			new UtilityWindow Parent { get { return (UtilityWindow)base.Parent; } }
-		}
+		void Initialize (object parentWidget, IAccessibleEventSink eventSink);
 
-		protected override BackendHost CreateBackendHost ()
-		{
-			return new WindowBackendHost ();
-		}
+		bool IsAccessible { get; set; }
 
-		IUtilityWindowBackend Backend {
-			get { return (IUtilityWindowBackend)BackendHost.Backend; }
-		}
+		string Identifier { get; set; }
+
+		string Label { get; set; }
+
+		string Title { get; set; }
+
+		string Description { get; set; }
+
+		string Value { get; set; }
+
+		Uri Uri { get; set; }
+
+		Rectangle Bounds { get; set; }
+
+		Role Role { get; set; }
+
+		string RoleDescription { get; set; }
+	}
+
+	public interface IAccessibleEventSink
+	{
+		bool OnPress ();
+		//void OnPerformAccessibleAction (AccessibleActionEventArgs args);
+	}
+
+	public enum AccessibleEvent
+	{
+		Press,
+		//PerformAction,
 	}
 }
