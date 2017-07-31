@@ -297,6 +297,7 @@ namespace Xwt.Mac
 		public event EventHandler Unhidden;
 		public event EventHandler<OpenFilesEventArgs> OpenFilesRequest;
 		public event EventHandler<OpenUrlEventArgs> OpenUrl;
+		public event EventHandler<ShowDockMenuArgs> ShowDockMenu;
 		
 		public AppDelegate (bool launched)
 		{
@@ -376,6 +377,19 @@ namespace Xwt.Mac
 				openFilesEvent (NSApplication.SharedApplication, args);
 			}
 		}
+
+		public override NSMenu ApplicationDockMenu (NSApplication sender)
+		{
+			NSMenu retMenu = null;
+			var showDockMenuEvent = ShowDockMenu;
+			if (showDockMenuEvent != null) {
+				var args = new ShowDockMenuArgs ();
+				showDockMenuEvent (NSApplication.SharedApplication, args);
+				retMenu = args.DockMenu;
+			}
+
+			return retMenu;
+		}
 	}
 
 	public class TerminationEventArgs : EventArgs
@@ -404,5 +418,10 @@ namespace Xwt.Mac
 		{
 			Url = url;
 		}
+	}
+
+	public class ShowDockMenuArgs : EventArgs
+	{
+		public NSMenu DockMenu { get; set; }
 	}
 }
