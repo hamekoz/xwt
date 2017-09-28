@@ -83,6 +83,12 @@ namespace Xwt.Mac
 			return new CustomImage (ApplicationContext, drawCallback);
 		}
 
+		public override Size GetSize (string file)
+		{
+			using (var rep = NSImageRep.ImageRepFromFile (file))
+				return rep.Size.ToXwtSize ();
+		}
+
 		public override Xwt.Drawing.Image GetStockIcon (string id)
 		{
 			NSImage img;
@@ -327,7 +333,7 @@ namespace Xwt.Mac
 
 		internal void DrawInContext (CGContextBackend ctx, ImageDescription idesc)
 		{
-			var s = ctx.Size != CGSize.Empty ? ctx.Size : Size;
+			var s = ctx.Size != CGSize.Empty ? ctx.Size : new CGSize (idesc.Size.Width, idesc.Size.Height);
 			actx.InvokeUserCode (delegate {
 				drawCallback (ctx, new Rectangle (0, 0, s.Width, s.Height), idesc, actx.Toolkit);
 			});

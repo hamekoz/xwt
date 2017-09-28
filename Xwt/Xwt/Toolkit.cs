@@ -282,7 +282,6 @@ namespace Xwt
 			catch (Exception ex) {
 				if (throwIfFails)
 					throw new Exception ("Toolkit could not be loaded", ex);
-				Application.NotifyException (ex);
 			}
 			if (throwIfFails)
 				throw new Exception ("Toolkit could not be loaded");
@@ -554,7 +553,7 @@ namespace Xwt
 		/// </summary>
 		/// <returns>An Xwt widget with the specified native widget backend.</returns>
 		/// <param name="nativeWidget">The native widget.</param>
-		public Widget WrapWidget (object nativeWidget, NativeWidgetSizing preferredSizing = NativeWidgetSizing.External)
+		public Widget WrapWidget (object nativeWidget, NativeWidgetSizing preferredSizing = NativeWidgetSizing.External, bool reparent = true)
 		{
 			var externalWidget = nativeWidget as Widget;
 			if (externalWidget != null) {
@@ -563,7 +562,7 @@ namespace Xwt
 				nativeWidget = externalWidget.Surface.ToolkitEngine.GetNativeWidget (externalWidget);
 			}
 			var embedded = CreateObject<EmbeddedNativeWidget> ();
-			embedded.Initialize (nativeWidget, externalWidget, preferredSizing);
+			embedded.Initialize (nativeWidget, externalWidget, preferredSizing, reparent);
 			return embedded;
 		}
 
@@ -586,6 +585,11 @@ namespace Xwt
 		public Context WrapContext (object nativeWidget, object nativeContext)
 		{
 			return new Context (backend.GetBackendForContext (nativeWidget, nativeContext), this);
+		}
+
+		public Accessibility.Accessible WrapAccessible (object nativeAccessibleObject)
+		{
+			return new Accessibility.Accessible (nativeAccessibleObject);
 		}
 
 		/// <summary>
@@ -654,6 +658,21 @@ namespace Xwt
 				return null;
 			else
 				throw new InvalidOperationException ("Object doesn't have a backend");
+		}
+
+		/// <summary>
+		/// Gets the bounds of a native widget in screen coordinates.
+		/// </summary>
+		/// <returns>The screen bounds relative to <see cref="P:Xwt.Desktop.Bounds"/>.</returns>
+		/// <param name="nativeWidget">The native widget.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="nativeWidget"/> is <c>null</c>.</exception>
+		/// <exception cref="NotSupportedException">This toolkit does not support this operation.</exception>
+		/// <exception cref="InvalidOperationException"><paramref name="nativeWidget"/> does not belong to this toolkit.</exception>
+		public Rectangle GetScreenBounds (object nativeWidget)
+		{
+			if (nativeWidget == null)
+				throw new ArgumentNullException (nameof(nativeWidget));
+			return backend.GetScreenBounds(nativeWidget);
 		}
 
 		/// <summary>

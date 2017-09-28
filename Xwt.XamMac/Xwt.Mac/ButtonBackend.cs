@@ -28,6 +28,7 @@ using System;
 using AppKit;
 using CoreGraphics;
 using Foundation;
+using Xwt.Accessibility;
 using Xwt.Backends;
 using Xwt.Drawing;
 
@@ -166,7 +167,7 @@ namespace Xwt.Mac
 		}
 	}
 	
-	class MacButton: NSButton, IViewObject
+	class MacButton: NSButton, IViewObject, INSAccessibleEventSource
 	{
 		//
 		// This is necessary since the Activated event for NSControl in AppKit does 
@@ -203,9 +204,7 @@ namespace Xwt.Mac
 		public MacButton (IRadioButtonEventSink eventSink, ApplicationContext context)
 		{
 			Activated += delegate {
-				context.InvokeUserCode (delegate {
-					eventSink.OnClicked ();
-				});
+				context.InvokeUserCode (eventSink.OnClicked);
 				OnActivatedInternal ();
 			};
 		}
@@ -248,6 +247,34 @@ namespace Xwt.Mac
 			}
 		}
 
+		public override bool AllowsVibrancy {
+			get {
+				// we don't support vibrancy
+				if (EffectiveAppearance.AllowsVibrancy)
+					return false;
+				return base.AllowsVibrancy;
+			}
+		}
+
+		NSButtonType buttonType = NSButtonType.MomentaryPushIn;
+		public override void SetButtonType (NSButtonType aType)
+		{
+			buttonType = aType;
+			base.SetButtonType (aType);
+		}
+
+		public override NSAppearance EffectiveAppearance {
+			get {
+				// HACK: if vibrancy is enabled (inside popover) radios/checks don't handle background drawing correctly
+				// FIXME: this fix doesn't work for the vibrant light theme, the label background is wrong if
+				//        the window background is set to a custom color
+				if (base.EffectiveAppearance.AllowsVibrancy &&
+				    (buttonType == NSButtonType.Switch || buttonType == NSButtonType.Radio))
+					Cell.BackgroundStyle = base.EffectiveAppearance.Name.Contains ("Dark") ? NSBackgroundStyle.Dark : NSBackgroundStyle.Light;
+				return base.EffectiveAppearance;
+			}
+		}
+
 		class ColoredButtonCell : NSButtonCell
 		{
 			public Color? Color { get; set; }
@@ -256,6 +283,17 @@ namespace Xwt.Mac
 			{
 				controlView.DrawWithColorTransform(Color, delegate { base.DrawBezelWithFrame (frame, controlView); });
 			}
+		}
+
+		public Func<bool> PerformAccessiblePressDelegate { get; set; }
+
+		public override bool AccessibilityPerformPress ()
+		{
+			if (PerformAccessiblePressDelegate != null) {
+				if (PerformAccessiblePressDelegate ())
+					return true;
+			}
+			return base.AccessibilityPerformPress ();
 		}
 	}
 }

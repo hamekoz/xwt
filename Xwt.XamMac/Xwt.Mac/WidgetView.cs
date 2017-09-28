@@ -101,6 +101,7 @@ namespace Xwt.Mac
 			args.X = p.X;
 			args.Y = p.Y;
 			args.Button = PointerButton.Right;
+			args.IsContextMenuTrigger = theEvent.TriggersContextMenu ();
 			context.InvokeUserCode (delegate {
 				eventSink.OnButtonPressed (args);
 			});
@@ -129,6 +130,7 @@ namespace Xwt.Mac
 			args.X = p.X;
 			args.Y = p.Y;
 			args.Button = PointerButton.Left;
+			args.IsContextMenuTrigger = theEvent.TriggersContextMenu ();
 			context.InvokeUserCode (delegate {
 				eventSink.OnButtonPressed (args);
 			});
@@ -150,16 +152,12 @@ namespace Xwt.Mac
 
 		public override void MouseEntered (NSEvent theEvent)
 		{
-			context.InvokeUserCode (delegate {
-				eventSink.OnMouseEntered ();
-			});
+			context.InvokeUserCode (eventSink.OnMouseEntered);
 		}
 
 		public override void MouseExited (NSEvent theEvent)
 		{
-			context.InvokeUserCode (delegate {
-				eventSink.OnMouseExited ();
-			});
+			context.InvokeUserCode (eventSink.OnMouseExited);
 		}
 
 		public override void MouseMoved (NSEvent theEvent)
@@ -219,9 +217,7 @@ namespace Xwt.Mac
 			bool changed = !newSize.Equals (Frame.Size);
 			base.SetFrameSize (newSize);
 			if (changed) {
-				context.InvokeUserCode (delegate {
-					eventSink.OnBoundsChanged ();
-				});
+				context.InvokeUserCode (eventSink.OnBoundsChanged);
 			}
 		}
 

@@ -126,6 +126,9 @@ namespace Xwt.Mac
 			RegisterBackend <Xwt.Backends.IColorPickerBackend, ColorPickerBackend> ();
 			RegisterBackend <Xwt.Backends.ICalendarBackend,CalendarBackend> ();
 			RegisterBackend <Xwt.Backends.ISelectFontDialogBackend, SelectFontDialogBackend> ();
+			RegisterBackend <Xwt.Backends.IAccessibleBackend, AccessibleBackend> ();
+			RegisterBackend <Xwt.Backends.IPopupWindowBackend, PopupWindowBackend> ();
+			RegisterBackend <Xwt.Backends.IUtilityWindowBackend, PopupWindowBackend> ();
 		}
 
 		public override void RunApplication ()
@@ -164,9 +167,7 @@ namespace Xwt.Mac
 			if (action == null)
 				throw new ArgumentNullException ("action");
 
-			NSRunLoop.Main.BeginInvokeOnMainThread (delegate {
-				action ();
-			});
+			NSRunLoop.Main.BeginInvokeOnMainThread (action);
 		}
 		
 		public override object TimerInvoke (Func<bool> action, TimeSpan timeSpan)
@@ -274,6 +275,16 @@ namespace Xwt.Mac
 			im.Size = new CGSize ((nfloat)view.Bounds.Width, (nfloat)view.Bounds.Height);
 			return im;
 		}
+
+		public override Rectangle GetScreenBounds (object nativeWidget)
+		{
+			var widget = nativeWidget as NSView;
+			if (widget == null)
+				throw new InvalidOperationException ("Widget belongs to a different toolkit");
+			var lo = widget.ConvertPointToView (new CGPoint(0, 0), null);
+			lo = widget.Window.ConvertRectToScreen (new CGRect (lo, CGSize.Empty)).Location;
+			return MacDesktopBackend.ToDesktopRect (new CGRect (lo.X, lo.Y, widget.Frame.Width, widget.Frame.Height));
+		}
 	}
 
 	public class AppDelegate : NSApplicationDelegate
@@ -285,6 +296,7 @@ namespace Xwt.Mac
 		public event EventHandler Unhidden;
 		public event EventHandler<OpenFilesEventArgs> OpenFilesRequest;
 		public event EventHandler<OpenUrlEventArgs> OpenUrl;
+		public event EventHandler<ShowDockMenuArgs> ShowDockMenu;
 		
 		public AppDelegate (bool launched)
 		{
@@ -364,6 +376,19 @@ namespace Xwt.Mac
 				openFilesEvent (NSApplication.SharedApplication, args);
 			}
 		}
+
+		public override NSMenu ApplicationDockMenu (NSApplication sender)
+		{
+			NSMenu retMenu = null;
+			var showDockMenuEvent = ShowDockMenu;
+			if (showDockMenuEvent != null) {
+				var args = new ShowDockMenuArgs ();
+				showDockMenuEvent (NSApplication.SharedApplication, args);
+				retMenu = args.DockMenu;
+			}
+
+			return retMenu;
+		}
 	}
 
 	public class TerminationEventArgs : EventArgs
@@ -392,5 +417,10 @@ namespace Xwt.Mac
 		{
 			Url = url;
 		}
+	}
+
+	public class ShowDockMenuArgs : EventArgs
+	{
+		public NSMenu DockMenu { get; set; }
 	}
 }
