@@ -207,6 +207,16 @@ namespace Xwt.GtkBackend
 			return Alignment.Start; // return Start for unknown and Fill
 		}
 
+		public static Pango.Alignment ToPangoAlignment (this Alignment alignment)
+		{
+			switch(alignment) {
+				case Alignment.Start: return Pango.Alignment.Left;
+				case Alignment.Center: return Pango.Alignment.Center;
+				case Alignment.End: return Pango.Alignment.Right;
+			}
+			throw new InvalidOperationException("Invalid alignment value: " + alignment);
+		}
+
 		public static Gtk.ResponseType ToResponseType (this Xwt.Command command)
 		{
 			if (command.Id == Command.Ok.Id)
