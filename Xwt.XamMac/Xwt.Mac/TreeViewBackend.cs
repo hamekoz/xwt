@@ -108,10 +108,15 @@ namespace Xwt.Mac
 				}
 				return width;
 			}
+
+			public override NSIndexSet GetSelectionIndexes(NSOutlineView outlineView, NSIndexSet proposedSelectionIndexes)
+			{
+				return Backend.SelectionMode != SelectionMode.None ? proposedSelectionIndexes : new NSIndexSet();
+			}
 		}
 		
-		NSOutlineView Tree {
-			get { return (NSOutlineView) Table; }
+		OutlineViewBackend Tree {
+			get { return (OutlineViewBackend) Table; }
 		}
 		
 		protected override NSTableView CreateView ()
@@ -119,6 +124,15 @@ namespace Xwt.Mac
 			var t = new OutlineViewBackend (EventSink, ApplicationContext);
 			t.Delegate = new TreeDelegate () { Backend = this };
 			return t;
+		}
+
+		public bool AnimationsEnabled {
+			get {
+				return Tree.AnimationsEnabled;
+			}
+			set {
+				Tree.AnimationsEnabled = value;
+			}
 		}
 		
 		protected override string SelectionChangeEventName {
@@ -161,6 +175,11 @@ namespace Xwt.Mac
 		public override void SetValue (object pos, int nField, object value)
 		{
 			source.SetValue ((TreePosition)pos, nField, value);
+		}
+
+		public override void InvalidateRowHeight (object pos)
+		{
+			UpdateRowHeight (tsource.GetItem((TreePosition)pos));
 		}
 
 		Dictionary<TreeItem, nfloat> RowHeights = new Dictionary<TreeItem, nfloat> ();
