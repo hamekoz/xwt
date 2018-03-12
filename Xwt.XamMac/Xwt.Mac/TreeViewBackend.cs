@@ -80,9 +80,11 @@ namespace Xwt.Mac
 			public override NSView GetView (NSOutlineView outlineView, NSTableColumn tableColumn, NSObject item)
 			{
 				var col = tableColumn as TableColumn;
-				var cell = outlineView.MakeView (tableColumn.Identifier, this);
+				var cell = outlineView.MakeView (tableColumn.Identifier, this) as CompositeCell;
 				if (cell == null)
 					cell = col.CreateNewView ();
+				if (cell.ObjectValue != item)
+					cell.ObjectValue = item;
 				return cell;
 			}
 
@@ -121,7 +123,7 @@ namespace Xwt.Mac
 		
 		protected override NSTableView CreateView ()
 		{
-			var t = new OutlineViewBackend (EventSink, ApplicationContext);
+			var t = new OutlineViewBackend (this);
 			t.Delegate = new TreeDelegate () { Backend = this };
 			return t;
 		}
@@ -156,14 +158,23 @@ namespace Xwt.Mac
 			tsource = new TreeSource (source);
 			Tree.DataSource = tsource;
 
-			source.NodeInserted += (sender, e) => Tree.ReloadItem (tsource.GetItem (source.GetParent(e.Node)), true);
-			source.NodeDeleted += (sender, e) => Tree.ReloadItem (tsource.GetItem (e.Node), true);
+			source.NodeInserted += (sender, e) => {
+				var parent = tsource.GetItem (source.GetParent (e.Node));
+				Tree.ReloadItem (parent, parent == null || Tree.IsItemExpanded (parent));
+			};
+			source.NodeDeleted += (sender, e) => {
+				var parent = tsource.GetItem (e.Node);
+				Tree.ReloadItem (parent, parent == null || Tree.IsItemExpanded (parent));
+			};
 			source.NodeChanged += (sender, e) => {
 				var item = tsource.GetItem (e.Node);
 				Tree.ReloadItem (item, false);
 				UpdateRowHeight (item);
 			};
-			source.NodesReordered += (sender, e) => Tree.ReloadItem (tsource.GetItem (e.Node), true);
+			source.NodesReordered += (sender, e) => {
+				var parent = tsource.GetItem (e.Node);
+				Tree.ReloadItem (parent, parent == null || Tree.IsItemExpanded (parent));
+			};
 			source.Cleared += (sender, e) => Tree.ReloadData ();
 		}
 		
@@ -204,12 +215,12 @@ namespace Xwt.Mac
 
 			for (int i = 0; i < Columns.Count; i++) {
 				CompositeCell cell = tryReuse ? Tree.GetView (i, row, false) as CompositeCell : null;
-				if (cell == null)
+				if (cell == null) {
 					cell = (Columns [i] as TableColumn)?.DataView as CompositeCell;
-
-				if (cell != null) {
 					cell.ObjectValue = pos;
 					height = (nfloat)Math.Max (height, cell.FittingSize.Height);
+				} else {
+					height = (nfloat)Math.Max (height, cell.GetRequiredHeightForWidth (cell.Frame.Width));
 				}
 			}
 			updatingRowHeight = false;
@@ -389,10 +400,9 @@ namespace Xwt.Mac
 	class TreeSource: NSOutlineViewDataSource
 	{
 		ITreeDataSource source;
-		
-		// TODO: remove unused positions
+
 		Dictionary<TreePosition,TreeItem> items = new Dictionary<TreePosition, TreeItem> ();
-		
+
 		public TreeSource (ITreeDataSource source)
 		{
 			this.source = source;
@@ -400,6 +410,12 @@ namespace Xwt.Mac
 			source.NodeInserted += (sender, e) => {
 				if (!items.ContainsKey (e.Node))
 					items.Add (e.Node, new TreeItem { Position = e.Node });
+			};
+			source.NodeDeleted += (sender, e) => {
+				items.Remove (e.Child);
+			};
+			source.Cleared += (sender, e) => {
+				items.Clear ();
 			};
 		}
 		
