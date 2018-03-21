@@ -66,7 +66,7 @@ namespace Xwt.Mac
 			{
 				nfloat height;
 				var treeItem = (TreeItem)item;
-				if (!Backend.RowHeights.TryGetValue (treeItem, out height))
+				if (!Backend.RowHeights.TryGetValue (treeItem, out height) || height <= 0)
 					height = Backend.RowHeights [treeItem] = Backend.CalcRowHeight (treeItem, false);
 				
 				return height;
@@ -164,18 +164,27 @@ namespace Xwt.Mac
 			};
 			source.NodeDeleted += (sender, e) => {
 				var parent = tsource.GetItem (e.Node);
+				var item = tsource.GetItem(e.Child);
+				if (item != null)
+					RowHeights.Remove (null);
 				Tree.ReloadItem (parent, parent == null || Tree.IsItemExpanded (parent));
 			};
 			source.NodeChanged += (sender, e) => {
 				var item = tsource.GetItem (e.Node);
-				Tree.ReloadItem (item, false);
-				UpdateRowHeight (item);
+				if (item != null) {
+					Tree.ReloadItem (item, false);
+					UpdateRowHeight (item);
+				}
 			};
 			source.NodesReordered += (sender, e) => {
 				var parent = tsource.GetItem (e.Node);
 				Tree.ReloadItem (parent, parent == null || Tree.IsItemExpanded (parent));
 			};
-			source.Cleared += (sender, e) => Tree.ReloadData ();
+			source.Cleared += (sender, e) =>
+			{
+				Tree.ReloadData ();
+				RowHeights.Clear ();
+			};
 		}
 		
 		public override object GetValue (object pos, int nField)
@@ -201,10 +210,13 @@ namespace Xwt.Mac
 			if (updatingRowHeight)
 				return;
 			var row = Tree.RowForItem (pos);
-			if (row < 0)
-				return;
-			RowHeights[pos] = CalcRowHeight (pos);
-			Table.NoteHeightOfRowsWithIndexesChanged (NSIndexSet.FromIndex (row));
+			if (row >= 0) {
+				// calculate new height now by reusing the visible cell to avoid using the template cell with unnecessary data reloads
+				// NOTE: cell reusing is not supported in Delegate.GetRowHeight and would require an other data reload to the template cell
+				RowHeights[pos] = CalcRowHeight (pos);
+				Table.NoteHeightOfRowsWithIndexesChanged (NSIndexSet.FromIndex (row));
+			} else // Invalidate the height, to force recalculation in Delegate.GetRowHeight
+				RowHeights[pos] = -1;
 		}
 
 		nfloat CalcRowHeight (TreeItem pos, bool tryReuse = true)
@@ -214,7 +226,7 @@ namespace Xwt.Mac
 			var row = Tree.RowForItem (pos);
 
 			for (int i = 0; i < Columns.Count; i++) {
-				CompositeCell cell = tryReuse ? Tree.GetView (i, row, false) as CompositeCell : null;
+				CompositeCell cell = tryReuse && row >= 0 ? Tree.GetView (i, row, false) as CompositeCell : null;
 				if (cell == null) {
 					cell = (Columns [i] as TableColumn)?.DataView as CompositeCell;
 					cell.ObjectValue = pos;
@@ -248,6 +260,7 @@ namespace Xwt.Mac
 			}
 			set {
 				SelectRow (value);
+				ScrollToRow (value);
 			}
 		}
 
@@ -306,12 +319,19 @@ namespace Xwt.Mac
 		public void ExpandToRow (TreePosition pos)
 		{
 			var p = source.GetParent (pos);
+			if (p == null)
+				return;
+			var s = new Stack<TreePosition> ();
 			while (p != null) {
-				var it = tsource.GetItem (p);
+				s.Push (p);
+				p = source.GetParent (p);
+			}
+
+			while (s.Count > 0) {
+				var it = tsource.GetItem (s.Pop ());
 				if (it == null)
 					break;
 				Tree.ExpandItem (it, false);
-				p = source.GetParent (p);
 			}
 		}
 

@@ -72,6 +72,8 @@ namespace Xwt.Mac
 
 		internal void AutosizeColumns ()
 		{
+			if (DataSource == null || RowCount == 0)
+				return;
 			var columns = TableColumns ();
 			if (columns.Length == 1 && columns[0].ResizingMask.HasFlag (NSTableColumnResizing.Autoresizing))
 				return;
@@ -182,6 +184,13 @@ namespace Xwt.Mac
 					AutosizeColumns ();
 				});
 			}
+		}
+
+		public override void ResetCursorRects ()
+		{
+			base.ResetCursorRects ();
+			if (Backend.Cursor != null)
+				AddCursorRect (Bounds, Backend.Cursor);
 		}
 
 		public override void UpdateTrackingAreas ()
