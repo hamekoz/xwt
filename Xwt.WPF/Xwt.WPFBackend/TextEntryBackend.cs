@@ -98,7 +98,7 @@ namespace Xwt.WPFBackend
 		public bool ReadOnly
 		{
 			get { return TextBox.IsReadOnly; }
-			set { TextBox.IsReadOnly = true; }
+			set { TextBox.IsReadOnly = value; }
 		}
 
 		public WrapMode Wrap {
