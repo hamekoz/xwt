@@ -124,6 +124,7 @@ namespace Xwt.WPFBackend
 			RegisterBackend<ICalendarBackend, CalendarBackend> ();
 			RegisterBackend<IPopupWindowBackend, WindowBackend>();
 			RegisterBackend<IUtilityWindowBackend, WindowBackend>();
+			RegisterBackend<IAccessibleBackend, AccessibleBackend>();
 		}
 
 		public override void DispatchPendingEvents()
